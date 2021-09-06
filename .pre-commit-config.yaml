@@ -1,0 +1,22 @@
+repos:
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v4.0.1
+      hooks:
+          - id: check-merge-conflict
+          - id: end-of-file-fixer
+          - id: mixed-line-ending
+            args: [--fix=no]
+          - id: trailing-whitespace
+    - repo: https://github.com/pocc/pre-commit-hooks
+      rev: v1.3.3
+      hooks:
+          - id: clang-format
+            args: [-i, --style=file]
+    - repo: local
+      hooks:
+          - id: clang-tidy
+            name: clang-tidy
+            description: Statically analyse files with clang-tidy.
+            entry: clang-tidy --fix --quiet -p=cmake-build-debug
+            language: system
+            types: [c]
