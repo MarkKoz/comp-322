@@ -3,6 +3,7 @@ project(cs_322_01 C)
 
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED True)
+set(CMAKE_C_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # Needed by Clang tooling (clang-tidy).
 
 add_executable(${PROJECT_NAME}
