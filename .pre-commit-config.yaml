@@ -13,4 +13,9 @@ repos:
           - id: clang-format
             args: [-i, --style=file]
           - id: clang-tidy
-            args: [--fix, --quiet, -p=cmake-build-debug]
+            args: [
+                --fix,
+                --quiet,
+                -p=cmake-build-debug,
+                --extra-arg=--target=x86_64-mingw64
+            ]

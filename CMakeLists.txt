@@ -11,16 +11,13 @@ add_executable(${PROJECT_NAME}
 target_include_directories(${PROJECT_NAME} PUBLIC
     include)
 
-# GCC-specific flags cannot be used here.
-# clang-tidy reads these flags and will emit warnings if Clang encounters a
-# flag that it does not understand/support (e.g. Wlogical-op).
 list(APPEND FLAGS_WARN
     -Wall
     -Wcast-align
     -Wconversion
     -Wextra
     -Wfloat-equal
-    # -Wlogical-op
+    -Wlogical-op
     -Wmissing-declarations
     -Wpedantic
     -Wredundant-decls
