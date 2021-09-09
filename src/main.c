@@ -52,7 +52,7 @@ size_t get_size_t(int base, size_t min, size_t max);
 
 int main(void)
 {
-    printf(MENU_TEXT);
+    puts(MENU_TEXT);
 
     while (1) {
         const size_t choice = get_size_t(10, 1, 4);
