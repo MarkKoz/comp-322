@@ -1,5 +1,7 @@
 #include <assert.h>
 #include <errno.h>
+#include <inttypes.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,30 +36,40 @@ void quit(void);
  */
 int getline(char** str, size_t* length, FILE* stream);
 
+/**
+ * @brief Prompt for an integer input in the given range until a valid value is given.
+ *
+ * Read a string with `getline` and convert it to an `size_t`. Terminate the program with code 1
+ * if there is an error reading stdin.
+ *
+ * @param base base of the interpreted integer value as understood by `strtoumax`
+ * @param min minimum allowed value (inclusive)
+ * @param max maximum allowed value (inclusive)
+ *
+ * @return the inputted integer
+ */
+size_t get_size_t(int base, size_t min, size_t max);
+
 int main(void)
 {
     printf(MENU_TEXT);
 
     while (1) {
-        char choice = '\0';
-        scanf(" %c", &choice);
+        const size_t choice = get_size_t(10, 1, 4);
 
         switch (choice) {
-            case '1':
+            case 1:
                 enter_parameters();
                 break;
-            case '2':
+            case 2:
                 create();
                 break;
-            case '3':
+            case 3:
                 destroy();
                 break;
-            case '4':
+            default:
                 quit();
                 return 0;
-            default:
-                printf("Invalid selection, try again: ");
-                continue; // Avoid printing the menu again.
         }
 
         printf("\n\n%s", MENU_TEXT);
@@ -114,4 +126,34 @@ int getline(char** str, size_t* length, FILE* stream)
         && buffer[chunk_size - 2] != '\n');
 
     return 0;
+}
+
+size_t get_size_t(int base, size_t min, size_t max)
+{
+    assert(min <= SIZE_MAX && max <= SIZE_MAX);
+    assert(min <= max);
+
+    char* input = NULL;
+    size_t length = 0;
+
+    if (getline(&input, &length, stdin)) {
+        fputs("FATAL: Error encountered while reading input.\n", stderr);
+        exit(1); // NOLINT(concurrency-mt-unsafe)
+    }
+
+    while (1) {
+        char* end = NULL;
+        const uintmax_t out = strtoumax(input, &end, base);
+
+        if (errno == ERANGE || out > max) {
+            fprintf(stderr, "ERROR: Integer must be in range [%zu,%zu], try again: ", min, max);
+        } else if (end == input || *end != '\n') {
+            fputs("ERROR: Invalid integer, try again: ", stderr);
+        } else if (strchr(input, '-') != NULL) {
+            // Check after conversion to prioritise the invalid integer error over this one.
+            fputs("ERROR: Integer must be positive, try again: ", stderr);
+        } else {
+            return (size_t) out;
+        }
+    }
 }
