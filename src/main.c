@@ -52,6 +52,11 @@ size_t get_size_t(int base, size_t min, size_t max);
 
 int main(void)
 {
+    if (atexit(&quit)) {
+        fprintf(stderr, "FATAL: Failed to register atexit handler");
+        return EXIT_FAILURE;
+    }
+
     puts(MENU_TEXT);
 
     while (1) {
@@ -68,8 +73,7 @@ int main(void)
                 destroy();
                 break;
             default:
-                quit();
-                return 0;
+                return EXIT_SUCCESS;
         }
 
         printf("\n\n%s", MENU_TEXT);
@@ -82,7 +86,10 @@ void create(void) { }
 
 void destroy(void) { }
 
-void quit(void) { }
+void quit(void)
+{
+    puts("Quitting program...\n");
+}
 
 int getline(char** str, size_t* length, FILE* stream)
 {
@@ -138,7 +145,7 @@ size_t get_size_t(int base, size_t min, size_t max)
 
     if (getline(&input, &length, stdin)) {
         fputs("FATAL: Error encountered while reading input.\n", stderr);
-        exit(1); // NOLINT(concurrency-mt-unsafe)
+        exit(EXIT_FAILURE); // NOLINT(concurrency-mt-unsafe)
     }
 
     while (1) {
