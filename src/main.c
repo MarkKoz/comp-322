@@ -170,7 +170,7 @@ size_t get_size_t(int base, size_t min, size_t max)
         char* end = NULL;
         const uintmax_t out = strtoumax(input, &end, base);
 
-        if (errno == ERANGE || out > max) {
+        if (errno == ERANGE || out > max || out < min) {
             fprintf(stderr, "ERROR: Integer must be in range [%zu,%zu], try again: ", min, max);
         } else if (end == input || *end != '\n') {
             fputs("ERROR: Invalid integer, try again: ", stderr);
