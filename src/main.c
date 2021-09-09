@@ -81,22 +81,22 @@ int main(void)
 
 void enter_parameters(void)
 {
-    puts("Enter maximum number of processes: ");
+    fputs("Enter maximum number of processes: ", stdout);
 }
 
 void create(void)
 {
-    puts("Enter the parent process index: ");
+    fputs("Enter the parent process index: ", stdout);
 }
 
 void destroy(void)
 {
-    puts("Enter the process whose descendants are to be destroyed: ");
+    fputs("Enter the process whose descendants are to be destroyed: ", stdout);
 }
 
 void quit(void)
 {
-    puts("Quitting program...\n");
+    puts("Quitting program...");
 }
 
 int getline(char** str, size_t* length, FILE* stream)
@@ -156,7 +156,7 @@ size_t get_size_t(int base, size_t min, size_t max)
             free(input);
         }
 
-        fputs("FATAL: Error encountered while reading input.\n", stderr);
+        fputs("\nFATAL: Error encountered while reading input.\n", stderr);
         exit(EXIT_FAILURE); // NOLINT(concurrency-mt-unsafe)
     }
 
