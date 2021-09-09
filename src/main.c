@@ -80,11 +80,20 @@ int main(void)
     }
 }
 
-void enter_parameters(void) { }
+void enter_parameters(void)
+{
+    puts("Enter maximum number of processes: ");
+}
 
-void create(void) { }
+void create(void)
+{
+    puts("Enter the parent process index: ");
+}
 
-void destroy(void) { }
+void destroy(void)
+{
+    puts("Enter the process whose descendants are to be destroyed: ");
+}
 
 void quit(void)
 {
