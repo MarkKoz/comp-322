@@ -82,16 +82,22 @@ int main(void)
 void enter_parameters(void)
 {
     fputs("Enter maximum number of processes: ", stdout);
+    const size_t max = get_size_t(10, 1, SIZE_MAX);
+    printf("You entered %zu\n", max);
 }
 
 void create(void)
 {
     fputs("Enter the parent process index: ", stdout);
+    const size_t proc_index = get_size_t(10, 0, SIZE_MAX);
+    printf("You selected %zu\n", proc_index);
 }
 
 void destroy(void)
 {
     fputs("Enter the process whose descendants are to be destroyed: ", stdout);
+    const size_t proc_index = get_size_t(10, 0, SIZE_MAX);
+    printf("You selected %zu\n", proc_index);
 }
 
 void quit(void)
