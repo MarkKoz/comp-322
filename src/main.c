@@ -6,15 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-const char* const MENU_TEXT =
-    "Process creation and destruction\n"
-    "--------------------------------\n"
-    "1) Enter parameters\n"
-    "2) Create a new child process\n"
-    "3) Destroy all descendants of a process\n"
-    "4) Quit program and free memory\n\n\n"
-    "Enter selection: ";
-
 void enter_parameters(void);
 void create(void);
 void destroy(void);
@@ -57,9 +48,17 @@ int main(void)
         return EXIT_FAILURE;
     }
 
-    puts(MENU_TEXT);
+    const char* const menu_text =
+        "Process creation and destruction\n"
+        "--------------------------------\n"
+        "1) Enter parameters\n"
+        "2) Create a new child process\n"
+        "3) Destroy all descendants of a process\n"
+        "4) Quit program and free memory\n\n\n"
+        "Enter selection: ";
 
     while (1) {
+        fputs(menu_text, stdout);
         const size_t choice = get_size_t(10, 1, 4);
 
         switch (choice) {
@@ -76,7 +75,7 @@ int main(void)
                 return EXIT_SUCCESS;
         }
 
-        printf("\n\n%s", MENU_TEXT);
+        puts("\n");
     }
 }
 
