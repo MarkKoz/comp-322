@@ -154,19 +154,19 @@ size_t get_size_t(int base, size_t min, size_t max)
     assert(min <= SIZE_MAX && max <= SIZE_MAX);
     assert(min <= max);
 
-    char* input = NULL;
-    size_t length = 0;
+    while (1) {
+        char* input = NULL;
+        size_t length = 0;
 
-    if (getline(&input, &length, stdin)) {
-        if (input != NULL) {
-            free(input);
+        if (getline(&input, &length, stdin)) {
+            if (input != NULL) {
+                free(input);
+            }
+
+            fputs("\nFATAL: Error encountered while reading input.\n", stderr);
+            exit(EXIT_FAILURE); // NOLINT(concurrency-mt-unsafe)
         }
 
-        fputs("\nFATAL: Error encountered while reading input.\n", stderr);
-        exit(EXIT_FAILURE); // NOLINT(concurrency-mt-unsafe)
-    }
-
-    while (1) {
         char* end = NULL;
         const uintmax_t out = strtoumax(input, &end, base);
 
