@@ -153,6 +153,10 @@ size_t get_size_t(int base, size_t min, size_t max)
     size_t length = 0;
 
     if (getline(&input, &length, stdin)) {
+        if (input != NULL) {
+            free(input);
+        }
+
         fputs("FATAL: Error encountered while reading input.\n", stderr);
         exit(EXIT_FAILURE); // NOLINT(concurrency-mt-unsafe)
     }
@@ -169,6 +173,7 @@ size_t get_size_t(int base, size_t min, size_t max)
             // Check after conversion to prioritise the invalid integer error over this one.
             fputs("ERROR: Integer must be positive, try again: ", stderr);
         } else {
+            free(input);
             return (size_t) out;
         }
     }
