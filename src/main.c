@@ -6,10 +6,25 @@
 #include <stdlib.h>
 #include <string.h>
 
-int enter_parameters(void);
-int create(void);
-int destroy(void);
-void quit(void);
+typedef struct pcb
+{
+    size_t parent;
+    size_t first_child;
+    size_t older_sibling;
+    size_t younger_sibling;
+} __attribute__((aligned(32))) pcb;
+
+typedef struct pcb_array
+{
+    pcb** data;
+    size_t count;
+    size_t capacity;
+} __attribute__((aligned(32))) pcb_array;
+
+int enter_parameters(pcb_array* array);
+int create(pcb_array* array);
+int destroy(pcb_array* array);
+void quit(pcb_array* array);
 
 /**
  * @brief Read a string from the input stream `stream` until a newline is encountered.
@@ -52,6 +67,12 @@ int main(void)
         "4) Quit program and free memory\n\n\n"
         "Enter selection: ";
 
+    pcb_array array = {
+        .data = NULL,
+        .count = 0,
+        .capacity = 0,
+    };
+
     int is_failure = 0;
     while (!is_failure) {
         fputs(menu_text, stdout);
@@ -63,27 +84,27 @@ int main(void)
 
         switch (choice) {
             case 1:
-                is_failure = enter_parameters();
+                is_failure = enter_parameters(&array);
                 break;
             case 2:
-                is_failure = create();
+                is_failure = create(&array);
                 break;
             case 3:
-                is_failure = destroy();
+                is_failure = destroy(&array);
                 break;
             default:
-                quit();
+                quit(&array);
                 return EXIT_SUCCESS;
         }
 
         puts("\n"); // Add some space before the menu is shown again.
     }
 
-    quit();
+    quit(&array);
     return EXIT_FAILURE;
 }
 
-int enter_parameters(void)
+int enter_parameters(pcb_array* const array)
 {
     fputs("Enter maximum number of processes: ", stdout);
 
@@ -92,16 +113,23 @@ int enter_parameters(void)
         return -1;
     }
 
+    array->data = malloc(max * sizeof(pcb));
+    if (array->data == NULL) {
+        fputs("FATAL: Failed to allocate memory for PCB array.\n", stderr);
+        return -1;
+    }
+
     printf("You entered %zu\n", max);
     return 0;
 }
 
-int create(void)
+int create(pcb_array* const array)
 {
+    assert(array->count > 0);
     fputs("Enter the parent process index: ", stdout);
 
     size_t proc_index = 0;
-    if (get_size_t(&proc_index, 10, 0, SIZE_MAX)) {
+    if (get_size_t(&proc_index, 10, 0, array->count - 1)) {
         return -1;
     }
 
@@ -109,12 +137,13 @@ int create(void)
     return 0;
 }
 
-int destroy(void)
+int destroy(pcb_array* const array)
 {
+    assert(array->count > 0);
     fputs("Enter the process whose descendants are to be destroyed: ", stdout);
 
     size_t proc_index = 0;
-    if (get_size_t(&proc_index, 10, 0, SIZE_MAX)) {
+    if (get_size_t(&proc_index, 10, 0, array->count - 1)) {
         return -1;
     }
 
@@ -122,8 +151,9 @@ int destroy(void)
     return 0;
 }
 
-void quit(void)
+void quit(pcb_array* const array)
 {
+    free(array->data);
     puts("Quitting program...");
 }
 
