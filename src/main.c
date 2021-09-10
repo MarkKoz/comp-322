@@ -6,9 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-void enter_parameters(void);
-void create(void);
-void destroy(void);
+int enter_parameters(void);
+int create(void);
+int destroy(void);
 void quit(void);
 
 /**
@@ -30,24 +30,19 @@ int getline(char** str, size_t* length, FILE* stream);
 /**
  * @brief Prompt for an integer input in the given range until a valid value is given.
  *
- * Read a string with `getline` and convert it to an `size_t`. Terminate the program with code 1
- * if there is an error reading stdin.
+ * Read a string with `getline` and convert it to a `size_t`.
  *
+ * @param out pointer to the `size_t` where the converted input will be stored
  * @param base base of the interpreted integer value as understood by `strtoumax`
  * @param min minimum allowed value (inclusive)
  * @param max maximum allowed value (inclusive)
  *
- * @return the inputted integer
+ * @return 0 if successful; -1 otherwise
  */
-size_t get_size_t(int base, size_t min, size_t max);
+int get_size_t(size_t* out, int base, size_t min, size_t max);
 
 int main(void)
 {
-    if (atexit(&quit)) {
-        fprintf(stderr, "FATAL: Failed to register atexit handler");
-        return EXIT_FAILURE;
-    }
-
     const char* const menu_text =
         "Process creation and destruction\n"
         "--------------------------------\n"
@@ -57,47 +52,74 @@ int main(void)
         "4) Quit program and free memory\n\n\n"
         "Enter selection: ";
 
-    while (1) {
+    int is_failure = 0;
+    while (!is_failure) {
         fputs(menu_text, stdout);
-        const size_t choice = get_size_t(10, 1, 4);
+
+        size_t choice = 4;
+        if (get_size_t(&choice, 10, 1, 4)) {
+            break;
+        }
 
         switch (choice) {
             case 1:
-                enter_parameters();
+                is_failure = enter_parameters();
                 break;
             case 2:
-                create();
+                is_failure = create();
                 break;
             case 3:
-                destroy();
+                is_failure = destroy();
                 break;
             default:
+                quit();
                 return EXIT_SUCCESS;
         }
 
-        puts("\n");
+        puts("\n"); // Add some space before the menu is shown again.
     }
+
+    quit();
+    return EXIT_FAILURE;
 }
 
-void enter_parameters(void)
+int enter_parameters(void)
 {
     fputs("Enter maximum number of processes: ", stdout);
-    const size_t max = get_size_t(10, 1, SIZE_MAX);
+
+    size_t max = 0;
+    if (get_size_t(&max, 10, 1, SIZE_MAX)) {
+        return -1;
+    }
+
     printf("You entered %zu\n", max);
+    return 0;
 }
 
-void create(void)
+int create(void)
 {
     fputs("Enter the parent process index: ", stdout);
-    const size_t proc_index = get_size_t(10, 0, SIZE_MAX);
+
+    size_t proc_index = 0;
+    if (get_size_t(&proc_index, 10, 0, SIZE_MAX)) {
+        return -1;
+    }
+
     printf("You selected %zu\n", proc_index);
+    return 0;
 }
 
-void destroy(void)
+int destroy(void)
 {
     fputs("Enter the process whose descendants are to be destroyed: ", stdout);
-    const size_t proc_index = get_size_t(10, 0, SIZE_MAX);
+
+    size_t proc_index = 0;
+    if (get_size_t(&proc_index, 10, 0, SIZE_MAX)) {
+        return -1;
+    }
+
     printf("You selected %zu\n", proc_index);
+    return 0;
 }
 
 void quit(void)
@@ -149,7 +171,7 @@ int getline(char** str, size_t* length, FILE* stream)
     return 0;
 }
 
-size_t get_size_t(int base, size_t min, size_t max)
+int get_size_t(size_t* out, int base, size_t min, size_t max)
 {
     assert(min <= SIZE_MAX && max <= SIZE_MAX);
     assert(min <= max);
@@ -164,13 +186,13 @@ size_t get_size_t(int base, size_t min, size_t max)
             }
 
             fputs("\nFATAL: Error encountered while reading input.\n", stderr);
-            exit(EXIT_FAILURE); // NOLINT(concurrency-mt-unsafe)
+            return -1;
         }
 
         char* end = NULL;
-        const uintmax_t out = strtoumax(input, &end, base);
+        const uintmax_t converted = strtoumax(input, &end, base);
 
-        if (errno == ERANGE || out > max || out < min) {
+        if (errno == ERANGE || converted > max || converted < min) {
             fprintf(stderr, "ERROR: Integer must be in range [%zu,%zu], try again: ", min, max);
         } else if (end == input || *end != '\n') {
             fputs("ERROR: Invalid integer, try again: ", stderr);
@@ -179,7 +201,8 @@ size_t get_size_t(int base, size_t min, size_t max)
             fputs("ERROR: Integer must be positive, try again: ", stderr);
         } else {
             free(input);
-            return (size_t) out;
+            *out = (size_t) converted;
+            return 0;
         }
     }
 }
