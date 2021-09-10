@@ -181,10 +181,7 @@ int get_size_t(size_t* out, int base, size_t min, size_t max)
         size_t length = 0;
 
         if (getline(&input, &length, stdin)) {
-            if (input != NULL) {
-                free(input);
-            }
-
+            free(input);
             fputs("\nFATAL: Error encountered while reading input.\n", stderr);
             return -1;
         }
