@@ -115,11 +115,14 @@ int initialise(pcb_array* const array)
         return -1;
     }
 
-    array->data = malloc(max * sizeof(pcb));
-    if (array->data == NULL) {
+    // Replace the previous array if a new maximum is set.
+    void* new_data = realloc(array->data, max * sizeof(pcb));
+    if (new_data == NULL) {
         fputs("FATAL: Failed to allocate memory for PCB array.\n", stderr);
         return -1;
     }
+
+    array->data = new_data;
 
     size_t i = 0;
     for (; i < max; ++i) {
