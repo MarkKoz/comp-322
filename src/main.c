@@ -21,7 +21,7 @@ typedef struct pcb_array
     size_t capacity;
 } __attribute__((aligned(32))) pcb_array;
 
-int enter_parameters(pcb_array* array);
+int initialise(pcb_array* array);
 int create(pcb_array* array);
 int destroy(pcb_array* array);
 void quit(pcb_array* array);
@@ -84,7 +84,7 @@ int main(void)
 
         switch (choice) {
             case 1:
-                is_failure = enter_parameters(&array);
+                is_failure = initialise(&array);
                 break;
             case 2:
                 is_failure = create(&array);
@@ -104,7 +104,7 @@ int main(void)
     return EXIT_FAILURE;
 }
 
-int enter_parameters(pcb_array* const array)
+int initialise(pcb_array* const array)
 {
     fputs("Enter maximum number of processes: ", stdout);
 
