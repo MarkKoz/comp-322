@@ -33,6 +33,8 @@ void quit(pcb_array* array);
  * newline and null terminator. Automatically increase the buffer's size to fit the entire input.
  * If `*str` is null, then ignore `*length` and allocate a new buffer.
  *
+ * `*str` must be freed by the caller; `getline` never frees it, even upon failure.
+ *
  * @param str pointer to a pointer to the initial buffer or to a null pointer
  * @param length pointer to the size of the initial buffer
  * @param stream valid, open input stream
@@ -195,10 +197,12 @@ int getline(char** str, size_t* length, FILE* stream)
 
         // str may have been preallocated, so reallocation may not be necessary.
         if (new_length > preallocated_size) {
-            *str = realloc(*str, new_length); // Acts as malloc(new_length) if *str == NULL
-            if (*str == NULL) {
+            // Acts as malloc(new_length) if *str == NULL
+            void* new_str = realloc(*str, new_length);
+            if (new_str == NULL) {
                 return -1;
             }
+            *str = new_str;
         }
 
         // Append the buffer to the end of the string.
