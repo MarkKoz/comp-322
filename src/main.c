@@ -119,6 +119,18 @@ int enter_parameters(pcb_array* const array)
         return -1;
     }
 
+    size_t i = 0;
+    for (; i < max; ++i) {
+        // A process cannot be its own parent, child, or sibling. Therefore, the current index can
+        // be used as the initial value for the fields. No need for a signed value (e.g. -1)!
+        // The exception to this is process 0, which should be assumed to always exist.
+        // It is its own parent.
+        array->data[i]->parent = i;
+        array->data[i]->first_child = i;
+        array->data[i]->older_sibling = i;
+        array->data[i]->younger_sibling = i;
+    }
+
     printf("You entered %zu\n", max);
     return 0;
 }
