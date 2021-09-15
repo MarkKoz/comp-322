@@ -17,9 +17,8 @@ typedef struct pcb
 typedef struct pcb_array
 {
     pcb** data;
-    size_t count;
-    size_t capacity;
-} __attribute__((aligned(32))) pcb_array;
+    size_t size;
+} __attribute__((aligned(16))) pcb_array;
 
 int initialise(pcb_array* array);
 int create(pcb_array* array);
@@ -71,8 +70,7 @@ int main(void)
 
     pcb_array array = {
         .data = NULL,
-        .count = 0,
-        .capacity = 0,
+        .size = 0,
     };
 
     int is_failure = 0;
@@ -123,6 +121,7 @@ int initialise(pcb_array* const array)
     }
 
     array->data = new_data;
+    array->size = max;
 
     size_t i = 0;
     for (; i < max; ++i) {
@@ -142,11 +141,11 @@ int initialise(pcb_array* const array)
 
 int create(pcb_array* const array)
 {
-    assert(array->count > 0);
+    assert(array->size > 0);
     fputs("Enter the parent process index: ", stdout);
 
     size_t proc_index = 0;
-    if (get_size_t(&proc_index, 10, 0, array->count - 1)) {
+    if (get_size_t(&proc_index, 10, 0, array->size - 1)) {
         return -1;
     }
 
@@ -156,11 +155,11 @@ int create(pcb_array* const array)
 
 int destroy(pcb_array* const array)
 {
-    assert(array->count > 0);
+    assert(array->size > 0);
     fputs("Enter the process whose descendants are to be destroyed: ", stdout);
 
     size_t proc_index = 0;
-    if (get_size_t(&proc_index, 10, 0, array->count - 1)) {
+    if (get_size_t(&proc_index, 10, 0, array->size - 1)) {
         return -1;
     }
 
