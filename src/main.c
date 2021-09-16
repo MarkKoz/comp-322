@@ -148,12 +148,48 @@ int create(pcb_array* const array)
     assert(array->size > 0); // TODO: this needs to be a normal check.
     fputs("Enter the parent process index: ", stdout);
 
-    size_t proc_index = 0;
-    if (get_size_t(&proc_index, 10, 0, array->size - 1)) {
-        return -1;
+    size_t parent_index = 0;
+    while (1) {
+        if (get_size_t(&parent_index, 10, 0, array->size - 1)) {
+            return -1;
+        }
+
+        if (parent_index != 0 && array->data[parent_index]->parent == parent_index) {
+            fputs("ERROR: The selected process is not active, try again: ", stderr);
+        } else {
+            break;
+        }
     }
 
-    printf("You selected %zu\n", proc_index);
+    // Search for an inactive process.
+    size_t child_index = 1; // Process 0 is always active.
+
+    while (child_index < array->size && array->data[child_index]->parent != child_index) {
+        ++child_index;
+    }
+
+    if (child_index == array->size) {
+        fputs("ERROR: There is no space for a new process.\n", stderr);
+        return 0;
+    }
+
+    // Add the child.
+    array->data[child_index]->parent = parent_index;
+
+    if (array->data[parent_index]->first_child == parent_index) {
+        array->data[parent_index]->first_child = child_index;
+    } else {
+        // Search for the youngest sibling starting at the first child of the parent.
+        size_t youngest_sibling = array->data[parent_index]->first_child;
+        while (array->data[youngest_sibling]->younger_sibling != youngest_sibling) {
+            youngest_sibling = array->data[youngest_sibling]->younger_sibling;
+        }
+
+        array->data[youngest_sibling]->younger_sibling = child_index;
+        array->data[child_index]->older_sibling = youngest_sibling;
+    }
+
+    printf("Created process %zu as a child of process %zu.\n", child_index, parent_index);
     return 0;
 }
 
