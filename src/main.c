@@ -17,7 +17,7 @@ typedef struct pcb
 
 typedef struct pcb_array
 {
-    pcb** data;
+    pcb* data;
     size_t size;
 } __attribute__((aligned(16))) pcb_array;
 // endregion
@@ -133,10 +133,10 @@ int initialise(pcb_array* const array)
         // be used as the initial value for the fields. No need for a signed value (e.g. -1)!
         // The exception to this is process 0, which should be assumed to always exist.
         // It is its own parent.
-        array->data[i]->parent = i;
-        array->data[i]->first_child = i;
-        array->data[i]->older_sibling = i;
-        array->data[i]->younger_sibling = i;
+        array->data[i].parent = i;
+        array->data[i].first_child = i;
+        array->data[i].older_sibling = i;
+        array->data[i].younger_sibling = i;
     }
 
     printf("You entered %zu\n", max);
@@ -154,7 +154,7 @@ int create(pcb_array* const array)
             return -1;
         }
 
-        if (parent_index != 0 && array->data[parent_index]->parent == parent_index) {
+        if (parent_index != 0 && array->data[parent_index].parent == parent_index) {
             fputs("ERROR: The selected process is not active, try again: ", stderr);
         } else {
             break;
@@ -164,7 +164,7 @@ int create(pcb_array* const array)
     // Search for an inactive process.
     size_t child_index = 1; // Process 0 is always active.
 
-    while (child_index < array->size && array->data[child_index]->parent != child_index) {
+    while (child_index < array->size && array->data[child_index].parent != child_index) {
         ++child_index;
     }
 
@@ -174,19 +174,19 @@ int create(pcb_array* const array)
     }
 
     // Add the child.
-    array->data[child_index]->parent = parent_index;
+    array->data[child_index].parent = parent_index;
 
-    if (array->data[parent_index]->first_child == parent_index) {
-        array->data[parent_index]->first_child = child_index;
+    if (array->data[parent_index].first_child == parent_index) {
+        array->data[parent_index].first_child = child_index;
     } else {
         // Search for the youngest sibling starting at the first child of the parent.
-        size_t youngest_sibling = array->data[parent_index]->first_child;
-        while (array->data[youngest_sibling]->younger_sibling != youngest_sibling) {
-            youngest_sibling = array->data[youngest_sibling]->younger_sibling;
+        size_t youngest_sibling = array->data[parent_index].first_child;
+        while (array->data[youngest_sibling].younger_sibling != youngest_sibling) {
+            youngest_sibling = array->data[youngest_sibling].younger_sibling;
         }
 
-        array->data[youngest_sibling]->younger_sibling = child_index;
-        array->data[child_index]->older_sibling = youngest_sibling;
+        array->data[youngest_sibling].younger_sibling = child_index;
+        array->data[child_index].older_sibling = youngest_sibling;
     }
 
     printf("Created process %zu as a child of process %zu.\n", child_index, parent_index);
