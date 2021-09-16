@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+// region structs
 typedef struct pcb
 {
     size_t parent;
@@ -19,7 +20,9 @@ typedef struct pcb_array
     pcb** data;
     size_t size;
 } __attribute__((aligned(16))) pcb_array;
+// endregion
 
+// region function prototypes
 int initialise(pcb_array* array);
 int create(pcb_array* array);
 int destroy(pcb_array* array);
@@ -56,6 +59,7 @@ int getline(char** str, size_t* length, FILE* stream);
  * @return 0 if successful; -1 otherwise
  */
 int get_size_t(size_t* out, int base, size_t min, size_t max);
+// endregion
 
 int main(void)
 {
@@ -141,7 +145,7 @@ int initialise(pcb_array* const array)
 
 int create(pcb_array* const array)
 {
-    assert(array->size > 0);
+    assert(array->size > 0); // TODO: this needs to be a normal check.
     fputs("Enter the parent process index: ", stdout);
 
     size_t proc_index = 0;
@@ -155,7 +159,7 @@ int create(pcb_array* const array)
 
 int destroy(pcb_array* const array)
 {
-    assert(array->size > 0);
+    assert(array->size > 0); // TODO: this needs to be a normal check.
     fputs("Enter the process whose descendants are to be destroyed: ", stdout);
 
     size_t proc_index = 0;
@@ -173,6 +177,7 @@ void quit(pcb_array* const array)
     puts("Quitting program...");
 }
 
+// region utilities
 int getline(char** str, size_t* length, FILE* stream)
 {
     size_t preallocated_size = 0;
@@ -251,3 +256,4 @@ int get_size_t(size_t* out, int base, size_t min, size_t max)
         }
     }
 }
+// endregion
