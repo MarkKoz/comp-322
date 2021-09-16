@@ -27,6 +27,7 @@ int initialise(pcb_array* array);
 int create(pcb_array* array);
 int destroy(pcb_array* array);
 void quit(pcb_array* array);
+int get_active_process(pcb_array* array, size_t* index);
 
 /**
  * @brief Read a string from the input stream `stream` until a newline is encountered.
@@ -150,24 +151,15 @@ int create(pcb_array* const array)
         return 0;
     }
 
-    fputs("Enter the parent process index: ", stdout);
-
     size_t parent_index = 0;
-    while (1) {
-        if (get_size_t(&parent_index, 10, 0, array->size - 1)) {
-            return -1;
-        }
+    size_t child_index = 1; // Process 0 is always active.
 
-        if (parent_index != 0 && array->data[parent_index].parent == parent_index) {
-            fputs("ERROR: The selected process is not active, try again: ", stderr);
-        } else {
-            break;
-        }
+    fputs("Enter the parent process index: ", stdout);
+    if (get_active_process(array, &parent_index)) {
+        return -1;
     }
 
     // Search for an inactive process.
-    size_t child_index = 1; // Process 0 is always active.
-
     while (child_index < array->size && array->data[child_index].parent != child_index) {
         ++child_index;
     }
@@ -204,10 +196,10 @@ int destroy(pcb_array* const array)
         return 0;
     }
 
-    fputs("Enter the process whose descendants are to be destroyed: ", stdout);
-
     size_t proc_index = 0;
-    if (get_size_t(&proc_index, 10, 0, array->size - 1)) {
+
+    fputs("Enter the process whose descendants are to be destroyed: ", stdout);
+    if (get_active_process(array, &proc_index)) {
         return -1;
     }
 
@@ -219,6 +211,23 @@ void quit(pcb_array* const array)
 {
     free(array->data);
     puts("Quitting program...");
+}
+
+int get_active_process(pcb_array* const array, size_t* const index)
+{
+    while (1) {
+        if (get_size_t(index, 10, 0, array->size - 1)) {
+            return -1;
+        }
+
+        if (*index != 0 && array->data[*index].parent == *index) {
+            fputs("ERROR: The selected process is not active, try again: ", stderr);
+        } else {
+            break;
+        }
+    }
+
+    return 0;
 }
 
 // region utilities
