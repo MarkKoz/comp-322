@@ -145,7 +145,11 @@ int initialise(pcb_array* const array)
 
 int create(pcb_array* const array)
 {
-    assert(array->size > 0); // TODO: this needs to be a normal check.
+    if (array->size == 0) {
+        fputs("ERROR: The PCB array must first be initialised (menu option 1).", stderr);
+        return 0;
+    }
+
     fputs("Enter the parent process index: ", stdout);
 
     size_t parent_index = 0;
@@ -195,7 +199,11 @@ int create(pcb_array* const array)
 
 int destroy(pcb_array* const array)
 {
-    assert(array->size > 0); // TODO: this needs to be a normal check.
+    if (array->size == 0) {
+        fputs("ERROR: The PCB array must first be initialised (menu option 1).", stderr);
+        return 0;
+    }
+
     fputs("Enter the process whose descendants are to be destroyed: ", stdout);
 
     size_t proc_index = 0;
