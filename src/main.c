@@ -7,6 +7,9 @@
 #include <string.h>
 
 // region structs
+/**
+ * @brief Process Control Block
+ */
 typedef struct pcb
 {
     size_t parent;
@@ -15,6 +18,9 @@ typedef struct pcb
     size_t younger_sibling;
 } __attribute__((aligned(32))) pcb;
 
+/**
+ * @brief A PCB array with a field for the array's size.
+ */
 typedef struct pcb_array
 {
     pcb* data;
@@ -23,12 +29,75 @@ typedef struct pcb_array
 // endregion
 
 // region function prototypes
+/**
+ * @brief Initialise an array of PCBs to the inputted size.
+ *
+ * Prompt for a maximum process count and allocate memory accordingly into `array->data` as by
+ * `realloc`. Effectively overwrite any extant PCBs, unless a fatal error is encountered while
+ * prompting for a maximum process count.
+ *
+ * Use each PCB's index in the array as the initial value for all fields of that PCB. Thus, a field
+ * can be considered unset if its value equals the index. The index can be used because it doesn't
+ * make sense for a process to be its own parent, child, or sibling. If a PCB's parent is equal to
+ * its own index, then that PCB is said to be "inactive". The exception is PCB 0, which is always
+ * active and is its own parent.
+ *
+ * @param array array to initialise with PCBs
+ *
+ * @return 0 if successful; -1 otherwise
+ */
 int initialise(pcb_array* array);
+
+/**
+ * @brief Create a new child process.
+ *
+ * @param array array containing the PCBs
+ *
+ * @return -1 upon a fatal error; 0 otherwise (could be success or non-fatal error)
+ */
 int create(pcb_array* array);
+
+/**
+ * @brief Destroy the child processes of an inputted parent.
+ *
+ * @param array array containing the PCBs
+ *
+ * @return -1 upon a fatal error; 0 otherwise (could be success or non-fatal error)
+ */
 int destroy(pcb_array* array);
+
+/**
+ * @brief Free memory and display an exit message.
+ *
+ * @param array array containing the PCBs
+ */
 void quit(pcb_array* array);
+
+/**
+ * @brief Destroy the PCB at `proc_index` and all its younger siblings.
+ *
+ * @param array array containing the PCBs
+ * @param proc_index the index of the PCB in `array`
+ */
 void destroy_recursive(pcb_array* array, size_t proc_index);
+
+/**
+ * @brief Display a table of all PCBs in the given array.
+ *
+ * Don't display inactive PCBs. Display nothing for unset fields (i.e. when value == process index).
+ *
+ * @param array array containing the PCBs to display
+ */
 void show_table(pcb_array* array);
+
+/**
+ * @brief Prompt for an index of an active PCB until a valid value is given.
+ *
+ * @param array array containing the PCBs
+ * @param index pointer to the `size_t` where the input will be stored
+ *
+ * @return 0 if successful; -1 otherwise
+ */
 int get_active_process(pcb_array* array, size_t* index);
 
 /**
@@ -132,10 +201,6 @@ int initialise(pcb_array* const array)
 
     size_t i = 0;
     for (; i < max; ++i) {
-        // A process cannot be its own parent, child, or sibling. Therefore, the current index can
-        // be used as the initial value for the fields. No need for a signed value (e.g. -1)!
-        // The exception to this is process 0, which should be assumed to always exist.
-        // It is its own parent.
         array->data[i].parent = i;
         array->data[i].first_child = i;
         array->data[i].older_sibling = i;
