@@ -252,7 +252,7 @@ int create(pcb_array* const array)
         array->data[child_index].older_sibling = youngest_sibling;
     }
 
-    printf("Created process %zu as a child of process %zu.\n", child_index, parent_index);
+    printf("Created process %zu as a child of process %zu.\n\n", child_index, parent_index);
     show_table(array);
 
     return 0;
@@ -273,12 +273,12 @@ int destroy(pcb_array* const array)
     }
 
     if (array->data[proc_index].first_child == proc_index) {
-        printf("Process %zu has no children to destroy; no action taken.\n", proc_index);
+        printf("Process %zu has no children to destroy; no action taken.\n\n", proc_index);
     } else {
         destroy_recursive(array, array->data[proc_index].first_child); // Destroy all children.
         array->data[proc_index].first_child = proc_index; // Unset the child since it has none now.
 
-        printf("Deleted all descendants of process %zu.\n", proc_index);
+        printf("Deleted all descendants of process %zu.\n\n", proc_index);
     }
 
     show_table(array);
