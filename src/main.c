@@ -272,15 +272,16 @@ int destroy(pcb_array* const array)
         return -1;
     }
 
-    // Destroy all children.
-    destroy_recursive(array, array->data[proc_index].first_child);
+    if (array->data[proc_index].first_child == proc_index) {
+        printf("Process %zu has no children to destroy; no action taken.\n", proc_index);
+    } else {
+        destroy_recursive(array, array->data[proc_index].first_child); // Destroy all children.
+        array->data[proc_index].first_child = proc_index; // Unset the child since it has none now.
 
-    // Reset the fields of the process.
-    array->data[proc_index].first_child = proc_index;
+        printf("Deleted all descendants of process %zu.\n", proc_index);
+    }
 
-    printf("Deleted all descendants of process %zu.\n", proc_index);
     show_table(array);
-
     return 0;
 }
 
