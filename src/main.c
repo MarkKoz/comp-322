@@ -207,7 +207,7 @@ int initialise(pcb_array* const array)
         array->data[i].younger_sibling = i;
     }
 
-    printf("You entered %zu\n", max);
+    printf("Initialised %zu processes.\n", max);
     return 0;
 }
 
