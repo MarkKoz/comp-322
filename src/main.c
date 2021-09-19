@@ -277,8 +277,6 @@ int destroy(pcb_array* const array)
 
     // Reset the fields of the process.
     array->data[proc_index].first_child = proc_index;
-    array->data[proc_index].older_sibling = proc_index;
-    array->data[proc_index].younger_sibling = proc_index;
 
     printf("Deleted all descendants of process %zu.\n", proc_index);
     show_table(array);
