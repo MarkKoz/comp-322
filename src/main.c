@@ -107,7 +107,7 @@ int get_active_process(pcb_array* array, size_t* index);
  * newline and null terminator. Automatically increase the buffer's size to fit the entire input.
  * If `*str` is null, then ignore `*length` and allocate a new buffer.
  *
- * `*str` must be freed by the caller; `getline` never frees it, even upon failure.
+ * `*str` must be freed by the caller; `get_line` never frees it, even upon failure.
  *
  * @param str pointer to a pointer to the initial buffer or to a null pointer
  * @param length pointer to the size of the initial buffer
@@ -116,12 +116,12 @@ int get_active_process(pcb_array* array, size_t* index);
  * @return 0 if successful, with `*length` equal to the length of the read string; otherwise -1,
  *         with feof or ferror potentially set on the stream
  */
-int getline(char** str, size_t* length, FILE* stream);
+int get_line(char** str, size_t* length, FILE* stream);
 
 /**
  * @brief Prompt for an integer input in the given range until a valid value is given.
  *
- * Read a string with `getline` and convert it to a `size_t`.
+ * Read a string with `get_line` and convert it to a `size_t`.
  *
  * @param out pointer to the `size_t` where the converted input will be stored
  * @param base base of the interpreted integer value as understood by `strtoumax`
@@ -361,7 +361,7 @@ int get_active_process(pcb_array* const array, size_t* const index)
 }
 
 // region utilities
-int getline(char** str, size_t* length, FILE* stream)
+int get_line(char** str, size_t* length, FILE* stream)
 {
     size_t preallocated_size = 0;
     if (*str != NULL) {
@@ -416,7 +416,7 @@ int get_size_t(size_t* out, int base, size_t min, size_t max)
         char* input = NULL;
         size_t length = 0;
 
-        if (getline(&input, &length, stdin)) {
+        if (get_line(&input, &length, stdin)) {
             free(input);
             fputs("\nFATAL: Error encountered while reading input.\n", stderr);
             return -1;
