@@ -27,6 +27,7 @@ int initialise(pcb_array* array);
 int create(pcb_array* array);
 int destroy(pcb_array* array);
 void quit(pcb_array* array);
+void destroy_recursive(pcb_array* array, size_t proc_index);
 int get_active_process(pcb_array* array, size_t* index);
 
 /**
@@ -203,7 +204,15 @@ int destroy(pcb_array* const array)
         return -1;
     }
 
-    printf("You selected %zu\n", proc_index);
+    // Destroy all children.
+    destroy_recursive(array, array->data[proc_index].first_child);
+
+    // Reset the fields of the process.
+    array->data[proc_index].first_child = proc_index;
+    array->data[proc_index].older_sibling = proc_index;
+    array->data[proc_index].younger_sibling = proc_index;
+
+    printf("Deleted all descendants of process %zu.\n", proc_index);
     return 0;
 }
 
@@ -211,6 +220,22 @@ void quit(pcb_array* const array)
 {
     free(array->data);
     puts("Quitting program...");
+}
+
+void destroy_recursive(pcb_array* const array, size_t proc_index)
+{
+    size_t next = array->data[proc_index].younger_sibling;
+
+    // Reset the PCB.
+    array->data[proc_index].parent = proc_index;
+    array->data[proc_index].first_child = proc_index;
+    array->data[proc_index].older_sibling = proc_index;
+    array->data[proc_index].younger_sibling = proc_index;
+
+    // Destroy the younger sibling if the current process has one.
+    if (next != proc_index) {
+        destroy_recursive(array, next);
+    }
 }
 
 int get_active_process(pcb_array* const array, size_t* const index)
