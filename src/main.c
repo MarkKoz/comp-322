@@ -28,6 +28,7 @@ int create(pcb_array* array);
 int destroy(pcb_array* array);
 void quit(pcb_array* array);
 void destroy_recursive(pcb_array* array, size_t proc_index);
+void show_table(pcb_array* array);
 int get_active_process(pcb_array* array, size_t* index);
 
 /**
@@ -187,6 +188,8 @@ int create(pcb_array* const array)
     }
 
     printf("Created process %zu as a child of process %zu.\n", child_index, parent_index);
+    show_table(array);
+
     return 0;
 }
 
@@ -213,6 +216,8 @@ int destroy(pcb_array* const array)
     array->data[proc_index].younger_sibling = proc_index;
 
     printf("Deleted all descendants of process %zu.\n", proc_index);
+    show_table(array);
+
     return 0;
 }
 
@@ -235,6 +240,41 @@ void destroy_recursive(pcb_array* const array, size_t proc_index)
     // Destroy the younger sibling if the current process has one.
     if (next != proc_index) {
         destroy_recursive(array, next);
+    }
+}
+
+void show_table(pcb_array* const array)
+{
+    puts("i       Parent  First   Older   Younger\n--------------------------------------");
+
+    size_t i = 0;
+    for (; i < array->size; ++i) {
+        // Skip inactive processes. Process 0 is always active.
+        if (i != 0 && array->data[i].parent == i) {
+            continue;
+        }
+
+        printf("%zu\t%zu\t", i, array->data[i].parent);
+
+        // TODO: reduce code redundancy
+        // TODO: support alignment of arbitrary column widths
+        if (array->data[i].first_child != i) {
+            printf("%zu\t", array->data[i].first_child);
+        } else {
+            fputs("\t", stdout);
+        }
+
+        if (array->data[i].older_sibling != i) {
+            printf("%zu\t", array->data[i].older_sibling);
+        } else {
+            fputs("\t", stdout);
+        }
+
+        if (array->data[i].younger_sibling != i) {
+            printf("%zu\n", array->data[i].younger_sibling);
+        } else {
+            fputs("\n", stdout);
+        }
     }
 }
 
