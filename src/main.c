@@ -293,18 +293,21 @@ void quit(pcb_array* const array)
 
 void destroy_recursive(pcb_array* const array, size_t proc_index)
 {
-    size_t next = array->data[proc_index].younger_sibling;
+    // Destroy children if the current process has any.
+    if (array->data[proc_index].first_child != proc_index) {
+        destroy_recursive(array, array->data[proc_index].first_child);
+    }
+
+    // Destroy the younger sibling if the current process has one.
+    if (array->data[proc_index].younger_sibling != proc_index) {
+        destroy_recursive(array, array->data[proc_index].younger_sibling);
+    }
 
     // Reset the PCB.
     array->data[proc_index].parent = proc_index;
     array->data[proc_index].first_child = proc_index;
     array->data[proc_index].older_sibling = proc_index;
     array->data[proc_index].younger_sibling = proc_index;
-
-    // Destroy the younger sibling if the current process has one.
-    if (next != proc_index) {
-        destroy_recursive(array, next);
-    }
 }
 
 void show_table(pcb_array* const array)
