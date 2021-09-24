@@ -123,6 +123,7 @@ int initialise(schedule_table* const table)
 
 void quit(schedule_table* const table)
 {
+    free(table->processes);
     puts("Quitting program...");
 }
 
