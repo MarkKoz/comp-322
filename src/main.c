@@ -6,16 +6,40 @@
 #include <stdlib.h>
 #include <string.h>
 
+// region structs
+/**
+ * @brief A scheduled process.
+ */
+typedef struct process
+{
+    size_t id;
+    size_t arrival;
+    size_t total_cpu;
+    size_t start;
+    size_t end;
+    size_t turnaround;
+} __attribute__((aligned(64))) process;
+
+/**
+ * @brief An array of scheduled processes with a field for the array's size.
+ */
+typedef struct schedule_table
+{
+    process* processes;
+    size_t size;
+} __attribute__((aligned(16))) schedule_table;
+// endregion
+
 // region function prototypes
-int initialise(void);
+int initialise(schedule_table* table);
 
-void quit(void);
+void quit(schedule_table* table);
 
-int schedule(void);
+int schedule(schedule_table* table);
 
-void show_table(void);
+void show_table(schedule_table* table);
 
-void sort_table(void);
+void sort_table(schedule_table* table);
 
 /**
  * @brief Read a string from the input stream `stream` until a newline is encountered.
@@ -61,6 +85,8 @@ int main(void)
         "4) Quit program and free memory\n\n\n"
         "Enter selection: ";
 
+    schedule_table table = {.processes = NULL, .size = 0};
+
     int is_failure = 0;
     while (!is_failure) {
         fputs(menu_text, stdout);
@@ -72,35 +98,35 @@ int main(void)
 
         switch (choice) {
             case 1:
-                is_failure = initialise();
+                is_failure = initialise(&table);
                 break;
             case 2:
             case 3:
-                is_failure = schedule();
+                is_failure = schedule(&table);
                 break;
             default:
-                quit();
+                quit(&table);
                 return EXIT_SUCCESS;
         }
 
         puts("\n"); // Add some space before the menu is shown again.
     }
 
-    quit();
+    quit(&table);
     return EXIT_FAILURE;
 }
 
-int initialise(void)
+int initialise(schedule_table* const table)
 {
     return 0;
 }
 
-void quit(void)
+void quit(schedule_table* const table)
 {
     puts("Quitting program...");
 }
 
-int schedule(void)
+int schedule(schedule_table* const table)
 {
     return 0;
 }
