@@ -168,7 +168,27 @@ void quit(schedule_table* const table)
 
 int schedule(schedule_table* const table)
 {
+    show_table(table);
     return 0;
+}
+
+void show_table(schedule_table* const table)
+{
+    puts(
+        "ID\tArrival\tTotal\tStart\tEnd\tTurnaround\n"
+        "--------------------------------------------------");
+
+    size_t i = 0;
+    for (; i < table->size; i++) {
+        printf(
+            "%zu\t%zu\t%zu\t%zu\t%zu\t%zu\n",
+            table->processes[i].id,
+            table->processes[i].arrival,
+            table->processes[i].total_cpu,
+            table->processes[i].start,
+            table->processes[i].end,
+            table->processes[i].turnaround);
+    }
 }
 
 // region utilities
