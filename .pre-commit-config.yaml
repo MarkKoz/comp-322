@@ -1,0 +1,21 @@
+repos:
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v4.0.1
+      hooks:
+          - id: check-merge-conflict
+          - id: end-of-file-fixer
+          - id: mixed-line-ending
+            args: [--fix=no]
+          - id: trailing-whitespace
+    - repo: https://github.com/pocc/pre-commit-hooks
+      rev: 661e54ba83001b848e1851c64789424bbf27c5eb
+      hooks:
+          - id: clang-format
+            args: [-i, --style=file]
+          - id: clang-tidy
+            args: [
+                --fix,
+                --quiet,
+                -p=cmake-build-debug,
+                --extra-arg=--target=x86_64-mingw64
+            ]
