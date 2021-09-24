@@ -118,6 +118,45 @@ int main(void)
 
 int initialise(schedule_table* const table)
 {
+    fputs("Enter total number of processes: ", stdout);
+
+    size_t max = 0;
+    if (get_size_t(&max, 10, 1, SIZE_MAX)) {
+        return -1;
+    }
+
+    // Replace the previous array if a new maximum is set.
+    void* new_data = realloc(table->processes, max * sizeof(process));
+    if (new_data == NULL) {
+        fputs("FATAL: Failed to allocate memory for process array.\n", stderr);
+        return -1;
+    }
+
+    table->processes = new_data;
+    table->size = max;
+
+    size_t i = 0;
+    size_t input = 0;
+
+    for (; i < max; ++i) {
+        table->processes[i].id = i;
+        table->processes[i].start = i;
+        table->processes[i].end = i;
+        table->processes[i].turnaround = i;
+
+        printf("Enter arrival time for process %zu:", i);
+        if (get_size_t(&input, 10, 0, SIZE_MAX)) {
+            return -1;
+        }
+        table->processes[i].arrival = input;
+
+        printf("Enter total CPU time for process %zu:", i);
+        if (get_size_t(&input, 10, 1, SIZE_MAX)) {
+            return -1;
+        }
+        table->processes[i].total_cpu = input;
+    }
+
     return 0;
 }
 
