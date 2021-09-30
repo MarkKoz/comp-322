@@ -184,7 +184,27 @@ void schedule(schedule_table* const table)
         return;
     }
 
+    // Sort by arrival in ascending order.
     qsort(table->processes, table->size, sizeof(process), compare_processes);
+
+    size_t i = 0;
+    for (; i < table->size; ++i) {
+        process* current = &table->processes[i];
+        process* previous = &table->processes[i - 1];
+
+        if (i == 0 || current->arrival >= previous->end) {
+            // It's the first process or there's no scheduling conflict.
+            current->start = current->arrival;
+        } else {
+            // There's a scheduling conflict.
+            // The earliest it can start is right when the previous ends.
+            current->start = previous->end;
+        }
+
+        current->end = current->start + current->total_cpu;
+        current->turnaround = current->end - current->arrival;
+    }
+
     show_table(table);
 }
 
