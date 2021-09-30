@@ -35,7 +35,7 @@ int initialise(schedule_table* table);
 
 void quit(schedule_table* table);
 
-int schedule(schedule_table* table);
+void schedule(schedule_table* table);
 
 void show_table(schedule_table* table);
 
@@ -113,7 +113,7 @@ int main(void)
                 break;
             case 2:
             case 3:
-                is_failure = schedule(&table);
+                schedule(&table);
                 break;
             default:
                 quit(&table);
@@ -177,11 +177,10 @@ void quit(schedule_table* const table)
     puts("Quitting program...");
 }
 
-int schedule(schedule_table* const table)
+void schedule(schedule_table* const table)
 {
     qsort(table->processes, table->size, sizeof(process), compare_processes);
     show_table(table);
-    return 0;
 }
 
 void show_table(schedule_table* const table)
