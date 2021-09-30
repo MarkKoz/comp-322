@@ -6,6 +6,15 @@
 #include <stdlib.h>
 #include <string.h>
 
+/**
+ * @brief Supported scheduling algorithms.
+ */
+enum algorithm
+{
+    alg_fifo, // First in first out
+    alg_sjf // Shorted job first
+};
+
 // region structs
 /**
  * @brief A scheduled process.
@@ -35,7 +44,7 @@ int initialise(schedule_table* table);
 
 void quit(schedule_table* table);
 
-void schedule(schedule_table* table);
+void schedule(schedule_table* table, enum algorithm alg);
 
 void show_table(schedule_table* table);
 
@@ -112,8 +121,10 @@ int main(void)
                 is_failure = initialise(&table);
                 break;
             case 2:
+                schedule(&table, alg_fifo);
+                break;
             case 3:
-                schedule(&table);
+                schedule(&table, alg_sjf);
                 break;
             default:
                 quit(&table);
@@ -177,7 +188,7 @@ void quit(schedule_table* const table)
     puts("Quitting program...");
 }
 
-void schedule(schedule_table* const table)
+void schedule(schedule_table* const table, const enum algorithm alg)
 {
     if (table->size == 0) {
         fputs("ERROR: The schedule table must first be initialised (menu option 1).", stderr);
@@ -197,6 +208,25 @@ void schedule(schedule_table* const table)
             current->start = current->arrival;
         } else {
             // There's a scheduling conflict.
+            if (alg == alg_sjf) {
+                size_t j = i + 1;
+                size_t smallest_index = i; // Will swap with itself if no are conflicts found.
+
+                // Find the process with the smallest total_cpu.
+                // Stop early if there are no more scheduling conflicts.
+                while (j < table->size && table->processes[j].arrival < previous->end) {
+                    if (current->total_cpu > table->processes[j].total_cpu) {
+                        smallest_index = j;
+                    }
+                    ++j;
+                }
+
+                // Swap *current with the process with the smallest total_cpu.
+                process temp = *current;
+                *current = table->processes[smallest_index];
+                table->processes[smallest_index] = temp;
+            }
+
             // The earliest it can start is right when the previous ends.
             current->start = previous->end;
         }
