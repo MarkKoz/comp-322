@@ -179,6 +179,11 @@ void quit(schedule_table* const table)
 
 void schedule(schedule_table* const table)
 {
+    if (table->size == 0) {
+        fputs("ERROR: The schedule table must first be initialised (menu option 1).", stderr);
+        return;
+    }
+
     qsort(table->processes, table->size, sizeof(process), compare_processes);
     show_table(table);
 }
