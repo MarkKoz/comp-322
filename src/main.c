@@ -39,7 +39,18 @@ int schedule(schedule_table* table);
 
 void show_table(schedule_table* table);
 
-void sort_table(schedule_table* table);
+/**
+ * @brief Compare the arrival of two processes in ascending order.
+ *
+ * This matches the interface `qsort` expects for the comparison function.
+ *
+ * @param a a process to compare
+ * @param b a process to compare
+ *
+ * @return negative integer value if `a`'s arrival is less than `b`'s, a positive integer value if
+ *         `a`'s arrival is greater than `b`'s, or zero if they're equivalent.
+ */
+int compare_processes(const void* a, const void* b);
 
 /**
  * @brief Read a string from the input stream `stream` until a newline is encountered.
@@ -168,6 +179,7 @@ void quit(schedule_table* const table)
 
 int schedule(schedule_table* const table)
 {
+    qsort(table->processes, table->size, sizeof(process), compare_processes);
     show_table(table);
     return 0;
 }
@@ -189,6 +201,22 @@ void show_table(schedule_table* const table)
             table->processes[i].end,
             table->processes[i].turnaround);
     }
+}
+
+int compare_processes(const void* const a, const void* const b)
+{
+    const process proc_a = *(const process*) a;
+    const process proc_b = *(const process*) b;
+
+    if (proc_a.arrival > proc_b.arrival) {
+        return 1;
+    }
+
+    if (proc_a.arrival == proc_b.arrival) {
+        return 0;
+    }
+
+    return -1;
 }
 
 // region utilities
