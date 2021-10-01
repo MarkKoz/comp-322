@@ -12,7 +12,7 @@
 enum algorithm
 {
     alg_fifo, // First in first out
-    alg_sjf // Shorted job first
+    alg_sjf // Shortest job first
 };
 
 // region structs
@@ -40,12 +40,39 @@ typedef struct schedule_array
 // endregion
 
 // region function prototypes
+/**
+ * @brief Initialise the schedule array to the inputted size.
+ *
+ * Prompt for a maximum process count and allocate memory accordingly into `array->processes` as by
+ * `realloc`. Effectively overwrite any extant processes, unless a fatal error is encountered while
+ * prompting for a maximum process count.
+ *
+ * @param array array to initialise with processes
+ *
+ * @return 0 if successful; -1 otherwise
+ */
 int initialise(schedule_array* array);
 
+/**
+ * @brief Free memory and display an exit message.
+ *
+ * @param array array for scheduled processes
+ */
 void quit(schedule_array* array);
 
+/**
+ * @brief Schedule the processes in the array using the given scheduling algorithm.
+ *
+ * @param array processes to schedule
+ * @param alg scheduling algorithm to use (FIFO or SJF)
+ */
 void schedule(schedule_array* array, enum algorithm alg);
 
+/**
+ * @brief Print the scheduled processes as a table.
+ *
+ * @param array processes to show
+ */
 void show_table(schedule_array* array);
 
 /**
