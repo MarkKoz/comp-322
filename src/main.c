@@ -32,21 +32,21 @@ typedef struct process
 /**
  * @brief An array of scheduled processes with a field for the array's size.
  */
-typedef struct schedule_table
+typedef struct schedule_array
 {
     process* processes;
     size_t size;
-} __attribute__((aligned(16))) schedule_table;
+} __attribute__((aligned(16))) schedule_array;
 // endregion
 
 // region function prototypes
-int initialise(schedule_table* table);
+int initialise(schedule_array* array);
 
-void quit(schedule_table* table);
+void quit(schedule_array* array);
 
-void schedule(schedule_table* table, enum algorithm alg);
+void schedule(schedule_array* array, enum algorithm alg);
 
-void show_table(schedule_table* table);
+void show_table(schedule_array* array);
 
 /**
  * @brief Compare the arrival of two processes in ascending order.
@@ -105,7 +105,7 @@ int main(void)
         "4) Quit program and free memory\n\n\n"
         "Enter selection: ";
 
-    schedule_table table = {.processes = NULL, .size = 0};
+    schedule_array array = {.processes = NULL, .size = 0};
 
     int is_failure = 0;
     while (!is_failure) {
@@ -118,27 +118,27 @@ int main(void)
 
         switch (choice) {
             case 1:
-                is_failure = initialise(&table);
+                is_failure = initialise(&array);
                 break;
             case 2:
-                schedule(&table, alg_fifo);
+                schedule(&array, alg_fifo);
                 break;
             case 3:
-                schedule(&table, alg_sjf);
+                schedule(&array, alg_sjf);
                 break;
             default:
-                quit(&table);
+                quit(&array);
                 return EXIT_SUCCESS;
         }
 
         puts("\n"); // Add some space before the menu is shown again.
     }
 
-    quit(&table);
+    quit(&array);
     return EXIT_FAILURE;
 }
 
-int initialise(schedule_table* const table)
+int initialise(schedule_array* const array)
 {
     fputs("Enter total number of processes: ", stdout);
 
@@ -148,60 +148,60 @@ int initialise(schedule_table* const table)
     }
 
     // Replace the previous array if a new maximum is set.
-    void* new_data = realloc(table->processes, max * sizeof(process));
+    void* new_data = realloc(array->processes, max * sizeof(process));
     if (new_data == NULL) {
         fputs("FATAL: Failed to allocate memory for process array.\n", stderr);
         return -1;
     }
 
-    table->processes = new_data;
-    table->size = max;
+    array->processes = new_data;
+    array->size = max;
 
     size_t i = 0;
     size_t input = 0;
 
     for (; i < max; ++i) {
-        table->processes[i].id = i;
-        table->processes[i].start = i;
-        table->processes[i].end = i;
-        table->processes[i].turnaround = i;
+        array->processes[i].id = i;
+        array->processes[i].start = i;
+        array->processes[i].end = i;
+        array->processes[i].turnaround = i;
 
         printf("Enter arrival time for process %zu:", i);
         if (get_size_t(&input, 10, 0, SIZE_MAX)) {
             return -1;
         }
-        table->processes[i].arrival = input;
+        array->processes[i].arrival = input;
 
         printf("Enter total CPU time for process %zu:", i);
         if (get_size_t(&input, 10, 1, SIZE_MAX)) {
             return -1;
         }
-        table->processes[i].total_cpu = input;
+        array->processes[i].total_cpu = input;
     }
 
     return 0;
 }
 
-void quit(schedule_table* const table)
+void quit(schedule_array* const array)
 {
-    free(table->processes);
+    free(array->processes);
     puts("Quitting program...");
 }
 
-void schedule(schedule_table* const table, const enum algorithm alg)
+void schedule(schedule_array* const array, const enum algorithm alg)
 {
-    if (table->size == 0) {
-        fputs("ERROR: The schedule table must first be initialised (menu option 1).", stderr);
+    if (array->size == 0) {
+        fputs("ERROR: The schedule array must first be initialised (menu option 1).", stderr);
         return;
     }
 
     // Sort by arrival in ascending order.
-    qsort(table->processes, table->size, sizeof(process), compare_processes);
+    qsort(array->processes, array->size, sizeof(process), compare_processes);
 
     size_t i = 0;
-    for (; i < table->size; ++i) {
-        process* current = &table->processes[i];
-        process* previous = &table->processes[i - 1];
+    for (; i < array->size; ++i) {
+        process* current = &array->processes[i];
+        process* previous = &array->processes[i - 1];
 
         if (i == 0 || current->arrival >= previous->end) {
             // It's the first process or there's no scheduling conflict.
@@ -214,8 +214,8 @@ void schedule(schedule_table* const table, const enum algorithm alg)
 
                 // Find the process with the smallest total_cpu.
                 // Stop early if there are no more scheduling conflicts.
-                while (j < table->size && table->processes[j].arrival < previous->end) {
-                    if (current->total_cpu > table->processes[j].total_cpu) {
+                while (j < array->size && array->processes[j].arrival < previous->end) {
+                    if (current->total_cpu > array->processes[j].total_cpu) {
                         smallest_index = j;
                     }
                     ++j;
@@ -223,8 +223,8 @@ void schedule(schedule_table* const table, const enum algorithm alg)
 
                 // Swap *current with the process with the smallest total_cpu.
                 process temp = *current;
-                *current = table->processes[smallest_index];
-                table->processes[smallest_index] = temp;
+                *current = array->processes[smallest_index];
+                array->processes[smallest_index] = temp;
             }
 
             // The earliest it can start is right when the previous ends.
@@ -235,25 +235,25 @@ void schedule(schedule_table* const table, const enum algorithm alg)
         current->turnaround = current->end - current->arrival;
     }
 
-    show_table(table);
+    show_table(array);
 }
 
-void show_table(schedule_table* const table)
+void show_table(schedule_array* const array)
 {
     puts(
         "ID\tArrival\tTotal\tStart\tEnd\tTurnaround\n"
         "--------------------------------------------------");
 
     size_t i = 0;
-    for (; i < table->size; i++) {
+    for (; i < array->size; i++) {
         printf(
             "%zu\t%zu\t%zu\t%zu\t%zu\t%zu\n",
-            table->processes[i].id,
-            table->processes[i].arrival,
-            table->processes[i].total_cpu,
-            table->processes[i].start,
-            table->processes[i].end,
-            table->processes[i].turnaround);
+            array->processes[i].id,
+            array->processes[i].arrival,
+            array->processes[i].total_cpu,
+            array->processes[i].start,
+            array->processes[i].end,
+            array->processes[i].turnaround);
     }
 }
 
