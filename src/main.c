@@ -24,8 +24,8 @@ typedef struct operating_system
 {
     process* processes;
     resource* resources;
-    size_t processes_size;
-    size_t resources_size;
+    size_t process_count;
+    size_t resource_count;
 } __attribute__((aligned(32))) operating_system;
 // endregion
 
@@ -77,7 +77,7 @@ int main(void)
         "Enter selection: ";
 
     operating_system os = {
-        .processes = NULL, .resources = NULL, .processes_size = 0, .resources_size = 0};
+        .processes = NULL, .resources = NULL, .process_count = 0, .resource_count = 0};
 
     int is_failure = 0;
     while (!is_failure) {
@@ -110,7 +110,7 @@ int main(void)
 void release(operating_system* const os)
 {
     size_t i = 0;
-    for (; i < os->processes_size; ++i) {
+    for (; i < os->process_count; ++i) {
         free(os->processes[i].max_requestable);
         free(os->processes[i].allocated);
         free(os->processes[i].needed);
@@ -119,8 +119,8 @@ void release(operating_system* const os)
     free(os->processes);
     free(os->resources);
 
-    os->processes_size = 0;
-    os->resources_size = 0;
+    os->process_count = 0;
+    os->resource_count = 0;
 }
 
 // region utilities
