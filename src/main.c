@@ -30,6 +30,12 @@ typedef struct operating_system
 // endregion
 
 // region function prototypes
+int prompt_reallocate(void** array, size_t element_size, size_t* element_count);
+
+int try_realloc(void** array, size_t new_size);
+
+int initialise(operating_system* os);
+
 void release(operating_system* os);
 
 /**
@@ -91,6 +97,8 @@ int main(void)
 
         switch (choice) {
             case 1:
+                is_failure = initialise(&os);
+                break;
             case 2:
             case 3:
                 break;
@@ -105,6 +113,49 @@ int main(void)
 
     release(&os);
     return EXIT_FAILURE;
+}
+
+int prompt_reallocate(void** const array, const size_t element_size, size_t* const element_count)
+{
+    size_t max = 0;
+    if (get_size_t(&max, 10, 1, SIZE_MAX)) {
+        return -1;
+    }
+
+    // Replace the previous array if a new maximum is set.
+    if (try_realloc(array, max * element_size)) {
+        return -1;
+    }
+
+    *element_count = max;
+    return 0;
+}
+
+int try_realloc(void** const array, const size_t new_size)
+{
+    void* new_array = realloc(*array, new_size);
+    if (new_array == NULL) {
+        fputs("FATAL: Failed to allocate memory for array.\n", stderr);
+        return -1;
+    }
+
+    *array = new_array;
+    return 0;
+}
+
+int initialise(operating_system* const os)
+{
+    fputs("Enter total number of processes: ", stdout);
+    if (prompt_reallocate((void**) &os->processes, sizeof(process), &os->process_count)) {
+        return -1;
+    }
+
+    fputs("Enter total number of resources: ", stdout);
+    if (prompt_reallocate((void**) &os->resources, sizeof(resource), &os->resource_count)) {
+        return -1;
+    }
+
+    return 0;
 }
 
 void release(operating_system* const os)
