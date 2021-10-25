@@ -6,6 +6,29 @@
 #include <stdlib.h>
 #include <string.h>
 
+// region structs
+typedef struct process
+{
+    size_t* max_requestable;
+    size_t* allocated;
+    size_t* needed;
+} __attribute__((aligned(32))) process;
+
+typedef struct resource
+{
+    size_t total_units;
+    size_t available_units;
+} __attribute__((aligned(16))) resource;
+
+typedef struct operating_system
+{
+    process* processes;
+    resource* resources;
+    size_t processes_size;
+    size_t resources_size;
+} __attribute__((aligned(32))) operating_system;
+// endregion
+
 // region function prototypes
 void release();
 
