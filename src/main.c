@@ -7,6 +7,8 @@
 #include <string.h>
 
 // region function prototypes
+void release();
+
 /**
  * @brief Read a string from the input stream `stream` until a newline is encountered.
  *
@@ -42,8 +44,44 @@ int get_size_t(size_t* out, int base, size_t min, size_t max);
 
 int main(void)
 {
-    return 0;
+    const char* const menu_text =
+        "Banker's Algorithm\n"
+        "------------------\n"
+        "1) Enter parameters\n"
+        "2) Print resource and process graphs\n"
+        "3) Determine a safe sequence\n"
+        "4) Quit program and free memory\n\n"
+        "Enter selection: ";
+
+    int is_failure = 0;
+    while (!is_failure) {
+        fputs(menu_text, stdout);
+
+        size_t choice = 4;
+        if (get_size_t(&choice, 10, 1, 4)) {
+            break;
+        }
+        puts(""); // Add a newline after the prompt.
+
+        switch (choice) {
+            case 1:
+            case 2:
+            case 3:
+                break;
+            default:
+                release();
+                puts("Goodbye.");
+                return EXIT_SUCCESS;
+        }
+
+        puts("\n"); // Add some space before the menu is shown again.
+    }
+
+    release();
+    return EXIT_FAILURE;
 }
+
+void release() { }
 
 // region utilities
 int get_line(char** str, size_t* length, FILE* stream)
