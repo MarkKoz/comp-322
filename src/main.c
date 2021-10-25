@@ -156,7 +156,7 @@ int initialise(operating_system* const os)
     }
 
     size_t i = 0;
-    for (; i <= os->process_count; ++i) {
+    for (; i < os->process_count; ++i) {
         size_t size = sizeof(size_t) * os->resource_count;
 
         if (try_realloc((void**) &os->processes[i].max_requestable, size)) {
@@ -172,8 +172,8 @@ int initialise(operating_system* const os)
 
     puts("***");
 
-    for (i = 0; i <= os->resource_count; ++i) {
-        printf("Enter number of total units for resource %d: ", i);
+    for (i = 0; i < os->resource_count; ++i) {
+        printf("Enter number of total units for resource %zu: ", i);
 
         size_t total_units = 0;
         if (get_size_t(&total_units, 10, 0, SIZE_MAX)) {
@@ -182,6 +182,41 @@ int initialise(operating_system* const os)
 
         os->resources[i].total_units = total_units;
         os->resources[i].available_units = total_units;
+    }
+
+    puts("***");
+
+    size_t j = 0;
+    for (i = 0; i < os->process_count; ++i) {
+        for (j = 0; j < os->resource_count; ++j) {
+            printf(
+                "Enter max number of units that process %zu can request from resource %zu: ", i, j);
+
+            size_t max_requestable = 0;
+            if (get_size_t(&max_requestable, 10, 0, os->resources[j].total_units)) {
+                return -1;
+            }
+
+            os->processes[i].max_requestable[j] = max_requestable;
+            os->processes[i].needed[j] = max_requestable;
+        }
+    }
+
+    puts("***");
+
+    for (i = 0; i < os->process_count; ++i) {
+        for (j = 0; j < os->resource_count; ++j) {
+            printf("Enter number of units that process %zu is allocated from resource %zu: ", i, j);
+
+            size_t allocated = 0;
+            if (get_size_t(&allocated, 10, 0, os->processes[i].max_requestable[j])) {
+                return -1;
+            }
+
+            os->processes[i].allocated[j] = allocated;
+            os->processes[i].needed[j] -= allocated;
+            os->resources[j].available_units -= allocated;
+        }
     }
 
     return 0;
