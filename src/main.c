@@ -30,7 +30,7 @@ typedef struct operating_system
 // endregion
 
 // region function prototypes
-void release();
+void release(operating_system* os);
 
 /**
  * @brief Read a string from the input stream `stream` until a newline is encountered.
@@ -76,6 +76,9 @@ int main(void)
         "4) Quit program and free memory\n\n"
         "Enter selection: ";
 
+    operating_system os = {
+        .processes = NULL, .resources = NULL, .processes_size = 0, .resources_size = 0};
+
     int is_failure = 0;
     while (!is_failure) {
         fputs(menu_text, stdout);
@@ -92,7 +95,7 @@ int main(void)
             case 3:
                 break;
             default:
-                release();
+                release(&os);
                 puts("Goodbye.");
                 return EXIT_SUCCESS;
         }
@@ -100,11 +103,25 @@ int main(void)
         puts("\n"); // Add some space before the menu is shown again.
     }
 
-    release();
+    release(&os);
     return EXIT_FAILURE;
 }
 
-void release() { }
+void release(operating_system* const os)
+{
+    size_t i = 0;
+    for (; i < os->processes_size; ++i) {
+        free(os->processes[i].max_requestable);
+        free(os->processes[i].allocated);
+        free(os->processes[i].needed);
+    }
+
+    free(os->processes);
+    free(os->resources);
+
+    os->processes_size = 0;
+    os->resources_size = 0;
+}
 
 // region utilities
 int get_line(char** str, size_t* length, FILE* stream)
