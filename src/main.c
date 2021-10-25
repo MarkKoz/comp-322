@@ -155,6 +155,21 @@ int initialise(operating_system* const os)
         return -1;
     }
 
+    size_t i = 0;
+    for (; i <= os->process_count; ++i) {
+        size_t size = sizeof(size_t) * os->resource_count;
+
+        if (try_realloc((void**) &os->processes[i].max_requestable, size)) {
+            return -1;
+        }
+        if (try_realloc((void**) &os->processes[i].allocated, size)) {
+            return -1;
+        }
+        if (try_realloc((void**) &os->processes[i].needed, size)) {
+            return -1;
+        }
+    }
+
     return 0;
 }
 
