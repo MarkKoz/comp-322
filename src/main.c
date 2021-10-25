@@ -170,6 +170,20 @@ int initialise(operating_system* const os)
         }
     }
 
+    puts("***");
+
+    for (i = 0; i <= os->resource_count; ++i) {
+        printf("Enter number of total units for resource %d: ", i);
+
+        size_t total_units = 0;
+        if (get_size_t(&total_units, 10, 0, SIZE_MAX)) {
+            return -1;
+        }
+
+        os->resources[i].total_units = total_units;
+        os->resources[i].available_units = total_units;
+    }
+
     return 0;
 }
 
