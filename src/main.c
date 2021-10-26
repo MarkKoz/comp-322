@@ -183,14 +183,16 @@ int initialise(operating_system* const os)
     for (; i < os->process_count; ++i) {
         size_t size = sizeof(size_t) * os->resource_count;
 
+        // Exit upon failure because release() can't know how much of the array and which fields it
+        // can free.
         if (try_malloc((void**) &os->processes[i].max_requestable, size)) {
-            return -1;
+            exit(-1); // NOLINT(concurrency-mt-unsafe)
         }
         if (try_malloc((void**) &os->processes[i].allocated, size)) {
-            return -1;
+            exit(-1); // NOLINT(concurrency-mt-unsafe)
         }
         if (try_malloc((void**) &os->processes[i].needed, size)) {
-            return -1;
+            exit(-1); // NOLINT(concurrency-mt-unsafe)
         }
     }
 
