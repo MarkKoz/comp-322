@@ -29,12 +29,33 @@ typedef struct operating_system
 } __attribute__((aligned(32))) operating_system;
 // endregion
 
-// region function prototypes
-int prompt_reallocate(void** array, size_t element_size, size_t* element_count);
+// region enums
+typedef enum process_field
+{
+    proc_max_requestable,
+    proc_allocated,
+    proc_needed
+} process_field;
 
-int try_realloc(void** array, size_t new_size);
+typedef enum resource_field
+{
+    res_total_units,
+    res_available_units
+} resource_field;
+// endregion
+
+// region function prototypes
+int prompt_malloc(void** array, size_t element_size, size_t* element_count);
+
+int try_malloc(void** array, size_t new_size);
 
 int initialise(operating_system* os);
+
+void print_graphs(operating_system* os);
+
+void print_array(operating_system* os, resource_field field);
+
+void print_matrix(operating_system* os, process_field field);
 
 void release(operating_system* os);
 
@@ -100,6 +121,8 @@ int main(void)
                 is_failure = initialise(&os);
                 break;
             case 2:
+                print_graphs(&os);
+                break;
             case 3:
                 break;
             default:
@@ -115,15 +138,14 @@ int main(void)
     return EXIT_FAILURE;
 }
 
-int prompt_reallocate(void** const array, const size_t element_size, size_t* const element_count)
+int prompt_malloc(void** const array, const size_t element_size, size_t* const element_count)
 {
     size_t max = 0;
     if (get_size_t(&max, 10, 1, SIZE_MAX)) {
         return -1;
     }
 
-    // Replace the previous array if a new maximum is set.
-    if (try_realloc(array, max * element_size)) {
+    if (try_malloc(array, max * element_size)) {
         return -1;
     }
 
@@ -131,9 +153,9 @@ int prompt_reallocate(void** const array, const size_t element_size, size_t* con
     return 0;
 }
 
-int try_realloc(void** const array, const size_t new_size)
+int try_malloc(void** const array, const size_t new_size)
 {
-    void* new_array = realloc(*array, new_size);
+    void* new_array = malloc(new_size);
     if (new_array == NULL) {
         fputs("FATAL: Failed to allocate memory for array.\n", stderr);
         return -1;
@@ -145,13 +167,15 @@ int try_realloc(void** const array, const size_t new_size)
 
 int initialise(operating_system* const os)
 {
+    release(os);
+
     fputs("Enter total number of processes: ", stdout);
-    if (prompt_reallocate((void**) &os->processes, sizeof(process), &os->process_count)) {
+    if (prompt_malloc((void**) &os->processes, sizeof(process), &os->process_count)) {
         return -1;
     }
 
     fputs("Enter total number of resources: ", stdout);
-    if (prompt_reallocate((void**) &os->resources, sizeof(resource), &os->resource_count)) {
+    if (prompt_malloc((void**) &os->resources, sizeof(resource), &os->resource_count)) {
         return -1;
     }
 
@@ -159,13 +183,13 @@ int initialise(operating_system* const os)
     for (; i < os->process_count; ++i) {
         size_t size = sizeof(size_t) * os->resource_count;
 
-        if (try_realloc((void**) &os->processes[i].max_requestable, size)) {
+        if (try_malloc((void**) &os->processes[i].max_requestable, size)) {
             return -1;
         }
-        if (try_realloc((void**) &os->processes[i].allocated, size)) {
+        if (try_malloc((void**) &os->processes[i].allocated, size)) {
             return -1;
         }
-        if (try_realloc((void**) &os->processes[i].needed, size)) {
+        if (try_malloc((void**) &os->processes[i].needed, size)) {
             return -1;
         }
     }
@@ -220,6 +244,99 @@ int initialise(operating_system* const os)
     }
 
     return 0;
+}
+
+void print_graphs(operating_system* const os)
+{
+    if (os->process_count == 0 || os->resource_count == 0) {
+        fputs(
+            "ERROR: The processes and resources must first be initialised (menu option 1).",
+            stderr);
+        return;
+    }
+
+    puts("Total units:");
+    print_array(os, res_total_units);
+
+    puts("\nAvailable units:");
+    print_array(os, res_available_units);
+
+    puts("\nMax requestable units:");
+    print_matrix(os, proc_max_requestable);
+
+    puts("\nAllocated units:");
+    print_matrix(os, proc_allocated);
+
+    puts("\nNeeded units:");
+    print_matrix(os, proc_needed);
+}
+
+void print_array(operating_system* const os, const resource_field field)
+{
+    size_t i = 0;
+    for (; i < os->resource_count; ++i) {
+        printf("\tr%zu", i);
+    }
+
+    puts("");
+
+    for (i = 0; i < os->resource_count; ++i) {
+        size_t value = 0;
+        switch (field) {
+            case res_total_units:
+                value = os->resources[i].total_units;
+                break;
+            case res_available_units:
+                value = os->resources[i].available_units;
+                break;
+            default:
+                fputs("\t", stdout); // Unknown field; ignore it.
+                break;
+        }
+
+        printf("\t%zu", value);
+    }
+
+    puts("");
+}
+
+void print_matrix(operating_system* const os, const process_field field)
+{
+    size_t i = 0;
+    size_t j = 0;
+
+    for (; i < os->process_count; ++i) {
+        if (i == 0) {
+            for (j = 0; j < os->resource_count; ++j) {
+                printf("\tr%zu", j);
+            }
+            puts("");
+        }
+
+        printf("p%zu", i);
+
+        for (j = 0; j < os->resource_count; ++j) {
+            size_t value = 0;
+            switch (field) {
+                case proc_max_requestable:
+                    value = os->processes[i].max_requestable[j];
+                    break;
+                case proc_allocated:
+                    value = os->processes[i].allocated[j];
+                    break;
+                case proc_needed:
+                    value = os->processes[i].needed[j];
+                    break;
+                default:
+                    fputs("\t", stdout); // Unknown field; ignore it.
+                    break;
+            }
+
+            printf("\t%zu", value);
+        }
+
+        puts("");
+    }
 }
 
 void release(operating_system* const os)
