@@ -57,6 +57,10 @@ void print_array(operating_system* os, resource_field field);
 
 void print_matrix(operating_system* os, process_field field);
 
+int array_is_lte(const size_t* left, const size_t* right, size_t size);
+
+int bankers_algorithm(operating_system* os);
+
 void release(operating_system* os);
 
 /**
@@ -124,6 +128,7 @@ int main(void)
                 print_graphs(&os);
                 break;
             case 3:
+                is_failure = bankers_algorithm(&os);
                 break;
             default:
                 release(&os);
@@ -252,7 +257,7 @@ void print_graphs(operating_system* const os)
 {
     if (os->process_count == 0 || os->resource_count == 0) {
         fputs(
-            "ERROR: The processes and resources must first be initialised (menu option 1).",
+            "ERROR: The processes and resources must first be initialised (menu option 1).\n",
             stderr);
         return;
     }
@@ -339,6 +344,88 @@ void print_matrix(operating_system* const os, const process_field field)
 
         puts("");
     }
+}
+
+int array_is_lte(const size_t* const left, const size_t* const right, const size_t size)
+{
+    size_t i = 0;
+    for (; i < size; ++i) {
+        if (left[i] > right[i]) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int bankers_algorithm(operating_system* const os)
+{
+    if (os->process_count == 0 || os->resource_count == 0) {
+        fputs(
+            "ERROR: The processes and resources must first be initialised (menu option 1).\n",
+            stderr);
+        return 0;
+    }
+
+    // Temporarily allocate memory for the algorithm.
+    size_t* sequenced = calloc(os->process_count, sizeof(size_t));
+    if (sequenced == NULL) {
+        fputs("FATAL: Failed to allocate memory for sequenced array.\n", stderr);
+        return -1;
+    }
+
+    size_t* current_units = malloc(os->resource_count * sizeof(size_t));
+    if (current_units == NULL) {
+        fputs("FATAL: Failed to allocate memory for current_units array.\n", stderr);
+        return -1;
+    }
+
+    size_t i = 0;
+    for (; i < os->resource_count; ++i) {
+        current_units[i] = os->resources[i].available_units;
+    }
+
+    // Run the algorithm.
+    size_t j = 0;
+    size_t completed = 0;
+
+    for (i = 0; completed < os->process_count; i = (i + 1) % os->process_count) {
+        if (sequenced[i] == 1) {
+            continue; // The current process is already sequenced; skip it.
+        }
+
+        printf("Checking if p%zu\'s needs [", i);
+        for (j = 0; j < os->resource_count; ++j) {
+            printf(" %zu", os->processes[i].needed[j]);
+        }
+
+        fputs("] are <= to available units [", stdout);
+        for (j = 0; j < os->resource_count; ++j) {
+            printf(" %zu", current_units[j]);
+        }
+        fputs("] - ", stdout);
+
+        // Check the arrays to see if the process is skipped or sequenced.
+        if (array_is_lte(os->processes[i].needed, current_units, os->resource_count) == 1) {
+            // Increase the current available units.
+            for (j = 0; j < os->resource_count; ++j) {
+                current_units[j] += os->processes[i].allocated[j];
+            }
+
+            // Indicate that the process has been safely sequenced.
+            sequenced[i] = 1;
+            completed++;
+            printf("p%zu safely sequenced", i);
+        } else {
+            fputs("skipping", stdout);
+        }
+
+        puts("");
+    }
+
+    free(sequenced);
+    free(current_units);
+
+    return 0;
 }
 
 void release(operating_system* const os)
