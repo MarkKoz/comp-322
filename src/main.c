@@ -173,43 +173,39 @@ int allocate(memory* const mem, const enum algorithm alg)
     }
 
     size_t i = 0;
-    size_t open_location = 0;
+    size_t start = 0;
+    size_t open_start = 0;
     size_t open_size = 0;
-    size_t selection = 0;
+
+    // selection is unsigned, so use a boolean instead of -1.
     bool selection_found = false;
+    size_t selection = 0;
+
+    // This initial value is guaranteed to always be larger than the largest possible open size.
     size_t smallest_size = mem->physical_size + 1;
-    size_t start = smallest_size;
 
-    // Check the opening between each allocated block.
-    for (; i < mem->free_index; ++i) {
-        open_size = mem->blocks[i].start - open_location;
-        if (size <= open_size) {
-            if (alg == alg_first && !selection_found) {
-                selection = i;
-                selection_found = true;
+    // This is a hacky way to get the loop below to check openings between allocated blocks as well
+    // as the opening between the last allocated block's address and the physical memory size.
+    // Since the block at the free index is not allocated, the fields can be set to any value
+    // without any concern (the fields for deallocated blocks are normally never read/used).
+    mem->blocks[mem->free_index].start = mem->physical_size;
 
-                start = open_location;
-            } else if (alg == alg_best && smallest_size > open_size) {
-                selection = i;
-                selection_found = true;
+    for (; i <= mem->free_index; ++i) {
+        open_size = mem->blocks[i].start - open_start;
+        if (size <= open_size && (alg == alg_first || smallest_size > open_size)) {
+            selection = i;
+            selection_found = true;
+            start = open_start;
+            smallest_size = open_size;
 
-                start = open_location;
-                smallest_size = open_size;
+            if (alg == alg_first) {
+                // No need to keep checking once the first open location is found.
+                break;
             }
         }
 
-        open_location = mem->blocks[i].start + mem->blocks[i].size;
-    }
-
-    open_size = mem->physical_size - open_location;
-    if (size <= open_size
-        && ((alg == alg_first && !selection_found)
-            || (alg == alg_best && smallest_size > open_size)))
-    {
-        selection = mem->free_index;
-        selection_found = true;
-
-        start = open_location;
+        // 1 past the end address of the current block.
+        open_start = mem->blocks[i].start + mem->blocks[i].size;
     }
 
     if (!selection_found) {
