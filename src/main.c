@@ -30,6 +30,8 @@ typedef struct memory
 // region function prototypes
 int initialise(memory* mem, enum algorithm* alg);
 
+int deallocate(memory* mem);
+
 void defragment(memory* mem);
 
 void release(memory* mem);
@@ -99,7 +101,9 @@ int main(void)
                 is_failure = initialise(&mem, &alg);
                 break;
             case 2:
+                break;
             case 3:
+                is_failure = deallocate(&mem);
                 break;
             case 4:
                 defragment(&mem);
@@ -142,6 +146,38 @@ int initialise(memory* const mem, enum algorithm* const alg)
     mem->physical_size = size;
     mem->free_index = 0;
     *alg = (unsigned) alg_input;
+
+    return 0;
+}
+
+int deallocate(memory* const mem)
+{
+    if (mem->physical_size == 0) {
+        fputs("ERROR: Memory must first be initialised (menu option 1)", stderr);
+        return 0;
+    }
+
+    if (mem->free_index == 0) {
+        fputs("ERROR: Memory is empty. Allocate first.", stderr);
+        return 0;
+    }
+
+    fputs("Enter block index: ", stdout);
+    size_t i = 0;
+    if (get_size_t(&i, 10, 0, mem->free_index - 1)) {
+        return -1;
+    }
+
+    --mem->free_index;
+
+    // Starting at the block after the one being deallocated, move all allocated blocks back by 1.
+    for (; i < mem->free_index; ++i) {
+        mem->blocks[i].start = mem->blocks[i + 1].start;
+        mem->blocks[i].size = mem->blocks[i + 1].size;
+    }
+
+    puts("Block successfully deallocated.");
+    print_blocks(mem);
 
     return 0;
 }
