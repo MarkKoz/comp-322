@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <inttypes.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,6 +30,8 @@ typedef struct memory
 
 // region function prototypes
 int initialise(memory* mem, enum algorithm* alg);
+
+int allocate(memory* mem, enum algorithm alg);
 
 int deallocate(memory* mem);
 
@@ -101,6 +104,7 @@ int main(void)
                 is_failure = initialise(&mem, &alg);
                 break;
             case 2:
+                is_failure = allocate(&mem, alg);
                 break;
             case 3:
                 is_failure = deallocate(&mem);
@@ -147,6 +151,90 @@ int initialise(memory* const mem, enum algorithm* const alg)
     mem->free_index = 0;
     *alg = (unsigned) alg_input;
 
+    return 0;
+}
+
+int allocate(memory* const mem, const enum algorithm alg)
+{
+    if (mem->physical_size == 0) {
+        fputs("ERROR: Memory must first be initialised (menu option 1)\n", stderr);
+        return 0;
+    }
+
+    if (mem->free_index == mem->physical_size) {
+        fputs("ERROR: Memory is full. Deallocate first.\n", stderr);
+        return 0;
+    }
+
+    fputs("Enter block size: ", stdout);
+    size_t size = 0;
+    if (get_size_t(&size, 10, 1, SIZE_MAX)) {
+        return -1;
+    }
+
+    size_t i = 0;
+    size_t open_location = 0;
+    size_t open_size = 0;
+    size_t selection = 0;
+    bool selection_found = false;
+    size_t smallest_size = mem->physical_size + 1;
+    size_t start = smallest_size;
+
+    // Check the opening between each allocated block.
+    for (; i < mem->free_index; ++i) {
+        open_size = mem->blocks[i].start - open_location;
+        if (size <= open_size) {
+            if (alg == alg_first && !selection_found) {
+                selection = i;
+                selection_found = true;
+
+                start = open_location;
+            } else if (alg == alg_best && smallest_size > open_size) {
+                selection = i;
+                selection_found = true;
+
+                start = open_location;
+                smallest_size = open_size;
+            }
+        }
+
+        open_location = mem->blocks[i].start + mem->blocks[i].size;
+    }
+
+    open_size = mem->physical_size - open_location;
+    if (size <= open_size
+        && ((alg == alg_first && !selection_found)
+            || (alg == alg_best && smallest_size > open_size)))
+    {
+        selection = mem->free_index;
+        selection_found = true;
+
+        start = open_location;
+    }
+
+    if (!selection_found) {
+        fputs("ERROR: Unable to insert a new block.\n", stderr);
+        return 0;
+    }
+
+    // To create space for the selection, starting at the selection, move all blocks forward by one.
+    for (i = mem->free_index; i > selection; --i) {
+        mem->blocks[i].start = mem->blocks[i - 1].start;
+        mem->blocks[i].size = mem->blocks[i - 1].size;
+    }
+
+    // Now that there is space, set the fields for the new block.
+    mem->blocks[selection].start = start;
+    mem->blocks[selection].size = size;
+    ++mem->free_index;
+
+    size_t end = mem->blocks[selection].start + mem->blocks[selection].size;
+    printf(
+        "New block inserted, starting at %zu and ending before %zu\n",
+        mem->blocks[selection].start,
+        end);
+
+    print_blocks(mem);
     return 0;
 }
 
