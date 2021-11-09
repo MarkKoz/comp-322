@@ -32,6 +32,8 @@ int initialise(memory* mem, enum algorithm* alg);
 
 void release(memory* mem);
 
+void print_blocks(const memory* mem);
+
 /**
  * @brief Read a string from the input stream `stream` until a newline is encountered.
  *
@@ -148,6 +150,19 @@ void release(memory* const mem)
         mem->free_index = 0;
         mem->blocks = NULL;
     }
+}
+
+void print_blocks(const memory* const mem)
+{
+    puts("\nIndex\tStart\tOpening\n-----------------------");
+
+    size_t i = 0;
+    for (; i < mem->free_index; ++i) {
+        size_t end = mem->blocks[i].start + mem->blocks[i].size;
+        printf("%zu\t%zu\t%zu\n", i, mem->blocks[i].start, end);
+    }
+
+    printf("Size: %zu\n", mem->physical_size);
 }
 
 // region utilities
