@@ -118,7 +118,7 @@ int main(void)
                 return EXIT_SUCCESS;
         }
 
-        puts("\n"); // Add some space before the menu is shown again.
+        puts(""); // Add some space before the menu is shown again.
     }
 
     release(&mem);
@@ -241,12 +241,12 @@ int allocate(memory* const mem, const enum algorithm alg)
 int deallocate(memory* const mem)
 {
     if (mem->physical_size == 0) {
-        fputs("ERROR: Memory must first be initialised (menu option 1)", stderr);
+        fputs("ERROR: Memory must first be initialised (menu option 1)\n", stderr);
         return 0;
     }
 
     if (mem->free_index == 0) {
-        fputs("ERROR: Memory is empty. Allocate first.", stderr);
+        fputs("ERROR: Memory is empty. Allocate first.\n", stderr);
         return 0;
     }
 
@@ -273,12 +273,12 @@ int deallocate(memory* const mem)
 void defragment(memory* const mem)
 {
     if (mem->physical_size == 0) {
-        fputs("ERROR: Memory must first be initialised (menu option 1)", stderr);
+        fputs("ERROR: Memory must first be initialised (menu option 1)\n", stderr);
         return;
     }
 
     if (mem->free_index == 0) {
-        fputs("ERROR: Memory is empty. Allocate first.", stderr);
+        fputs("ERROR: Memory is empty. Allocate first.\n", stderr);
         return;
     }
 
