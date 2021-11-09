@@ -30,6 +30,8 @@ typedef struct memory
 // region function prototypes
 int initialise(memory* mem, enum algorithm* alg);
 
+void defragment(memory* mem);
+
 void release(memory* mem);
 
 void print_blocks(const memory* mem);
@@ -98,7 +100,9 @@ int main(void)
                 break;
             case 2:
             case 3:
+                break;
             case 4:
+                defragment(&mem);
                 break;
             default:
                 puts("Goodbye.");
@@ -140,6 +144,31 @@ int initialise(memory* const mem, enum algorithm* const alg)
     *alg = (unsigned) alg_input;
 
     return 0;
+}
+
+void defragment(memory* const mem)
+{
+    if (mem->physical_size == 0) {
+        fputs("ERROR: Memory must first be initialised (menu option 1)", stderr);
+        return;
+    }
+
+    if (mem->free_index == 0) {
+        fputs("ERROR: Memory is empty. Allocate first.", stderr);
+        return;
+    }
+
+    // The first block is a special case since it has no previous block.
+    mem->blocks[0].start = 0;
+
+    // Change every block's starting address into the previous block's ending address.
+    size_t i = 1;
+    for (; i < mem->free_index; ++i) {
+        mem->blocks[i].start = mem->blocks[i - 1].start + mem->blocks[i - 1].size;
+    }
+
+    puts("Memory successfully defragmented.");
+    print_blocks(mem);
 }
 
 void release(memory* const mem)
