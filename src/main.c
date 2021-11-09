@@ -6,7 +6,30 @@
 #include <stdlib.h>
 #include <string.h>
 
+enum algorithm
+{
+    alg_first = 0, // First fit
+    alg_best = 1 // Best fit
+};
+
+// region structs
+typedef struct block
+{
+    size_t start;
+    size_t size;
+} __attribute__((aligned(16))) block;
+
+typedef struct memory
+{
+    block* blocks;
+    size_t physical_size;
+    size_t free_index;
+} __attribute__((aligned(32))) memory;
+// endregion
+
 // region function prototypes
+int initialise(memory* mem, enum algorithm* alg);
+
 /**
  * @brief Read a string from the input stream `stream` until a newline is encountered.
  *
@@ -52,6 +75,9 @@ int main(void)
         "5) Quit program and free memory\n\n"
         "Enter selection: ";
 
+    memory mem = {.blocks = NULL, .physical_size = 0, .free_index = 0};
+    enum algorithm alg = alg_best;
+
     int is_failure = 0;
     while (!is_failure) {
         fputs(menu_text, stdout);
@@ -64,6 +90,8 @@ int main(void)
 
         switch (choice) {
             case 1:
+                is_failure = initialise(&mem, &alg);
+                break;
             case 2:
             case 3:
             case 4:
@@ -77,6 +105,35 @@ int main(void)
     }
 
     return EXIT_FAILURE;
+}
+
+int initialise(memory* const mem, enum algorithm* const alg)
+{
+    fputs("Enter size of physical memory: ", stdout);
+    size_t size = 0;
+    if (get_size_t(&size, 10, 1, SIZE_MAX)) {
+        return -1;
+    }
+
+    fputs("Enter hole-fitting algorithm (0=first fit, 1=best fit): ", stdout);
+    size_t alg_input = 0;
+    if (get_size_t(&alg_input, 10, 0, 1)) {
+        return -1;
+    }
+
+    // Replace the previous array if a new maximum is set.
+    void* new_data = realloc(mem->blocks, size * sizeof(block));
+    if (new_data == NULL) {
+        fputs("FATAL: Failed to allocate memory for process array.\n", stderr);
+        return -1;
+    }
+
+    mem->blocks = new_data;
+    mem->physical_size = size;
+    mem->free_index = 0;
+    *alg = (unsigned) alg_input;
+
+    return 0;
 }
 
 // region utilities
