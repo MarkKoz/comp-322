@@ -30,6 +30,8 @@ typedef struct memory
 // region function prototypes
 int initialise(memory* mem, enum algorithm* alg);
 
+void release(memory* mem);
+
 /**
  * @brief Read a string from the input stream `stream` until a newline is encountered.
  *
@@ -98,12 +100,14 @@ int main(void)
                 break;
             default:
                 puts("Goodbye.");
+                release(&mem);
                 return EXIT_SUCCESS;
         }
 
         puts("\n"); // Add some space before the menu is shown again.
     }
 
+    release(&mem);
     return EXIT_FAILURE;
 }
 
@@ -134,6 +138,16 @@ int initialise(memory* const mem, enum algorithm* const alg)
     *alg = (unsigned) alg_input;
 
     return 0;
+}
+
+void release(memory* const mem)
+{
+    if (mem->physical_size > 0) {
+        free(mem->blocks);
+        mem->physical_size = 0;
+        mem->free_index = 0;
+        mem->blocks = NULL;
+    }
 }
 
 // region utilities
