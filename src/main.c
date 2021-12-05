@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <inttypes.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,6 +22,8 @@ int initialise(disk_request* request);
 void schedule(disk_request* request);
 
 void release(disk_request* request);
+
+bool is_duplicate(const size_t* array, size_t size, size_t value);
 
 /**
  * @brief Read a string from the input stream `stream` until a newline is encountered.
@@ -97,6 +100,64 @@ int main(void)
 
     release(&request);
     return EXIT_FAILURE;
+}
+
+int initialise(disk_request* const request)
+{
+    fputs("Enter number of concentric tracks (2 or more): ", stdout);
+    size_t track_count = 0;
+    if (get_size_t(&track_count, 10, 2, SIZE_MAX)) {
+        return -1;
+    }
+
+    printf("Enter size of sequence (1-%zu): ", track_count - 1);
+    size_t sequence_length = 0;
+    if (get_size_t(&sequence_length, 10, 1, track_count - 1)) {
+        return -1;
+    }
+
+    // Replace the previous array if a new size is set.
+    size_t* new_sequence = realloc(request->track_sequence, sequence_length * sizeof(size_t));
+    if (new_sequence == NULL) {
+        fputs("FATAL: Failed to allocate memory for track sequence array.\n", stderr);
+        return -1;
+    }
+
+    size_t i = 0;
+    for (; i < sequence_length; ++i) {
+        printf("Enter track index (1-%zu) for sequence index %zu: ", track_count - 1, i);
+        size_t track_index = 0;
+        if (get_size_t(&track_index, 10, 1, track_count - 1)) {
+            return -1;
+        }
+
+        while (is_duplicate(new_sequence, i, track_index)) {
+            fputs("ERROR: Invalid track - duplicate, try again: ", stderr);
+            if (get_size_t(&track_index, 10, 1, track_count - 1)) {
+                return -1;
+            }
+        }
+
+        new_sequence[i] = track_index;
+    }
+
+    request->track_count = track_count;
+    request->sequence_length = sequence_length;
+    request->track_sequence = new_sequence;
+
+    return 0;
+}
+
+bool is_duplicate(const size_t* const array, const size_t end, const size_t value)
+{
+    size_t i = 0;
+    for (; i < end; ++i) {
+        if (array[i] == value) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 // region utilities
