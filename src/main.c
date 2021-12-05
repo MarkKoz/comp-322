@@ -25,6 +25,8 @@ void release(disk_request* request);
 
 bool is_duplicate(const size_t* array, size_t size, size_t value);
 
+void print_sequence(const disk_request* request);
+
 /**
  * @brief Read a string from the input stream `stream` until a newline is encountered.
  *
@@ -168,6 +170,18 @@ bool is_duplicate(const size_t* const array, const size_t end, const size_t valu
     }
 
     return false;
+}
+
+void print_sequence(const disk_request* const request)
+{
+    puts("Sequence of tracks to seek:");
+
+    size_t i = 0;
+    for (; i < request->sequence_length; ++i) {
+        printf("%zu", request->track_sequence[i]);
+    }
+
+    puts("");
 }
 
 // region utilities
