@@ -180,7 +180,7 @@ int schedule_sstf(const disk_request* const request)
         return -1;
     }
 
-    memcpy(&ordered_sequence, request->track_sequence, request->sequence_length * sizeof(size_t));
+    memcpy(ordered_sequence, request->track_sequence, request->sequence_length * sizeof(size_t));
 
     size_t* ordered_sequence_delay = calloc(request->sequence_length, sizeof(size_t));
     if (ordered_sequence_delay == NULL) {
@@ -190,7 +190,7 @@ int schedule_sstf(const disk_request* const request)
     }
 
     // Sort the ordered sequence array in ascending order.
-    qsort(&ordered_sequence, request->sequence_length, sizeof(size_t), compare_tracks);
+    qsort(ordered_sequence, request->sequence_length, sizeof(size_t), compare_tracks);
 
     // Compute delays for the ordered sequence array.
     size_t i = 1;
