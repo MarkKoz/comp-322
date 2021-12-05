@@ -160,6 +160,25 @@ void schedule_fifo(const disk_request* const request)
         fputs("ERROR: A track sequence must first be entered (menu option 1)\n", stderr);
         return;
     }
+
+    print_sequence(request); // Print out the original track sequence.
+    puts("Traversed sequence:");
+
+    size_t i = 0;
+    size_t current_track = 0;
+    size_t traversed = 0;
+
+    for (; i < request->sequence_length; ++i) {
+        printf(" %zu", request->track_sequence[i]);
+        if (current_track > request->track_sequence[i]) {
+            traversed += current_track - request->track_sequence[i];
+        } else {
+            traversed += request->track_sequence[i] - current_track;
+        }
+        current_track = request->track_sequence[i];
+    }
+
+    printf("\nThe number of tracks traversed is %zu\n", traversed);
 }
 
 int schedule_sstf(const disk_request* const request)
