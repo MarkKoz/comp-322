@@ -27,7 +27,7 @@ void release(disk_request* request);
 
 bool is_duplicate(const size_t* array, size_t size, size_t value);
 
-void print_sequence(const disk_request* request);
+void print_traversal(const disk_request* request, const size_t* sequence);
 
 int compare_tracks(const void* a, const void* b);
 
@@ -163,24 +163,7 @@ void schedule_fifo(const disk_request* const request)
         return;
     }
 
-    print_sequence(request); // Print out the original track sequence.
-    puts("Traversed sequence:");
-
-    size_t i = 0;
-    size_t current_track = 0;
-    size_t traversed = 0;
-
-    for (; i < request->sequence_length; ++i) {
-        printf(" %zu", request->track_sequence[i]);
-        if (current_track > request->track_sequence[i]) {
-            traversed += current_track - request->track_sequence[i];
-        } else {
-            traversed += request->track_sequence[i] - current_track;
-        }
-        current_track = request->track_sequence[i];
-    }
-
-    printf("\nThe number of tracks traversed is %zu\n", traversed);
+    print_traversal(request, request->track_sequence);
 }
 
 int schedule_sstf(const disk_request* const request)
@@ -237,7 +220,7 @@ bool is_duplicate(const size_t* const array, const size_t end, const size_t valu
     return false;
 }
 
-void print_sequence(const disk_request* const request)
+void print_traversal(const disk_request* const request, const size_t* const sequence)
 {
     puts("Sequence of tracks to seek:");
 
@@ -246,7 +229,22 @@ void print_sequence(const disk_request* const request)
         printf("%zu", request->track_sequence[i]);
     }
 
-    puts("");
+    puts("\nTraversed sequence:");
+
+    size_t current_track = 0;
+    size_t traversed = 0;
+
+    for (i = 0; i < request->sequence_length; ++i) {
+        printf(" %zu", sequence[i]);
+        if (current_track > sequence[i]) {
+            traversed += current_track - sequence[i];
+        } else {
+            traversed += sequence[i] - current_track;
+        }
+        current_track = sequence[i];
+    }
+
+    printf("\nThe number of tracks traversed is %zu\n", traversed);
 }
 
 int compare_tracks(const void* const a, const void* const b)
