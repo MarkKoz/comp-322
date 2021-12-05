@@ -68,7 +68,7 @@ int main(void)
 {
     const char* const menu_text =
         "Disk Scheduling\n"
-        "-----------------\n"
+        "---------------\n"
         "1) Enter parameters\n"
         "2) Schedule disk tracks with FIFO\n"
         "3) Schedule disk tracks with SSTF\n"
@@ -226,7 +226,7 @@ int schedule_sstf(const disk_request* const request)
     if (delayed_tracks > 0) {
         printf(
             "The average delay of all tracks processed later is: %.2f\n\n"
-            "The longest delay experience by a track is: %zu by track %zu\n",
+            "The longest delay experienced by a track is: %zu by track %zu\n",
             (double) average_delay_total / (double) delayed_tracks,
             ordered_sequence_delay[max_delay_i],
             ordered_sequence[max_delay_i]);
@@ -262,14 +262,14 @@ bool is_duplicate(const size_t* const array, const size_t end, const size_t valu
 
 void print_traversal(const disk_request* const request, const size_t* const sequence)
 {
-    puts("Sequence of tracks to seek:");
+    fputs("Sequence of tracks to seek:", stdout);
 
     size_t i = 0;
     for (; i < request->sequence_length; ++i) {
-        printf("%zu", request->track_sequence[i]);
+        printf(" %zu", request->track_sequence[i]);
     }
 
-    puts("\nTraversed sequence:");
+    fputs("\nTraversed sequence:", stdout);
 
     size_t current_track = 0;
     size_t traversed = 0;
@@ -284,7 +284,7 @@ void print_traversal(const disk_request* const request, const size_t* const sequ
         current_track = sequence[i];
     }
 
-    printf("\nThe number of tracks traversed is %zu\n", traversed);
+    printf("\nThe number of tracks traversed is: %zu\n", traversed);
 }
 
 int compare_tracks(const void* const a, const void* const b)
