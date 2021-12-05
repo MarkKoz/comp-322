@@ -19,7 +19,9 @@ typedef struct disk_request
 // region function prototypes
 int initialise(disk_request* request);
 
-void schedule(disk_request* request);
+void schedule_fifo(const disk_request* request);
+
+int schedule_sstf(const disk_request* request);
 
 void release(disk_request* request);
 
@@ -88,8 +90,10 @@ int main(void)
                 is_failure = initialise(&request);
                 break;
             case 2:
+                schedule_fifo(&request);
+                break;
             case 3:
-                schedule(&request);
+                is_failure = schedule_sstf(&request);
                 break;
             default:
                 puts("Goodbye.");
@@ -146,6 +150,24 @@ int initialise(disk_request* const request)
     request->track_count = track_count;
     request->sequence_length = sequence_length;
     request->track_sequence = new_sequence;
+
+    return 0;
+}
+
+void schedule_fifo(const disk_request* const request)
+{
+    if (request->sequence_length == 0) {
+        fputs("ERROR: A track sequence must first be entered (menu option 1)\n", stderr);
+        return;
+    }
+}
+
+int schedule_sstf(const disk_request* const request)
+{
+    if (request->sequence_length == 0) {
+        fputs("ERROR: A track sequence must first be entered (menu option 1)\n", stderr);
+        return 0;
+    }
 
     return 0;
 }
