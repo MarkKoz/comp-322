@@ -188,6 +188,24 @@ int schedule_sstf(const disk_request* const request)
         return 0;
     }
 
+    size_t* ordered_sequence = malloc(request->sequence_length * sizeof(size_t));
+    if (ordered_sequence == NULL) {
+        fputs("FATAL: Failed to allocate memory for SSTF ordered_sequence array.\n", stderr);
+        return -1;
+    }
+
+    memcpy(&ordered_sequence, request->track_sequence, request->sequence_length * sizeof(size_t));
+
+    size_t* ordered_sequence_delay = calloc(request->sequence_length, sizeof(size_t));
+    if (ordered_sequence_delay == NULL) {
+        fputs("FATAL: Failed to allocate memory for SSTF ordered_sequence_delay array.\n", stderr);
+        free(ordered_sequence);
+        return -1;
+    }
+
+    free(ordered_sequence);
+    free(ordered_sequence_delay);
+
     return 0;
 }
 
