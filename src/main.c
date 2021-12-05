@@ -29,6 +29,8 @@ bool is_duplicate(const size_t* array, size_t size, size_t value);
 
 void print_sequence(const disk_request* request);
 
+int compare_tracks(const void* a, const void* b);
+
 /**
  * @brief Read a string from the input stream `stream` until a newline is encountered.
  *
@@ -188,6 +190,7 @@ int schedule_sstf(const disk_request* const request)
         return 0;
     }
 
+    // Allocate memory for temporary arrays.
     size_t* ordered_sequence = malloc(request->sequence_length * sizeof(size_t));
     if (ordered_sequence == NULL) {
         fputs("FATAL: Failed to allocate memory for SSTF ordered_sequence array.\n", stderr);
@@ -202,6 +205,9 @@ int schedule_sstf(const disk_request* const request)
         free(ordered_sequence);
         return -1;
     }
+
+    // Sort the ordered sequence array in ascending order.
+    qsort(&ordered_sequence, request->sequence_length, sizeof(size_t), compare_tracks);
 
     free(ordered_sequence);
     free(ordered_sequence_delay);
@@ -241,6 +247,22 @@ void print_sequence(const disk_request* const request)
     }
 
     puts("");
+}
+
+int compare_tracks(const void* const a, const void* const b)
+{
+    const size_t track_a = *(const size_t*) a;
+    const size_t track_b = *(const size_t*) b;
+
+    if (track_a < track_b) {
+        return -1;
+    }
+
+    if (track_a > track_b) {
+        return 1;
+    }
+
+    return 0;
 }
 
 // region utilities
