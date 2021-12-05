@@ -6,12 +6,21 @@
 #include <stdlib.h>
 #include <string.h>
 
+// region structs
+typedef struct disk_request
+{
+    size_t track_count;
+    size_t sequence_length;
+    size_t* track_sequence;
+} __attribute__((aligned(32))) disk_request;
+// endregion
+
 // region function prototypes
-int initialise();
+int initialise(disk_request* request);
 
-void schedule();
+void schedule(disk_request* request);
 
-void release();
+void release(disk_request* request);
 
 /**
  * @brief Read a string from the input stream `stream` until a newline is encountered.
@@ -57,6 +66,8 @@ int main(void)
         "4) Quit program and free memory\n\n"
         "Enter selection: ";
 
+    disk_request request = {0, 0, NULL};
+
     int is_failure = 0;
     while (!is_failure) {
         fputs(menu_text, stdout);
@@ -69,22 +80,22 @@ int main(void)
 
         switch (choice) {
             case 1:
-                is_failure = initialise();
+                is_failure = initialise(&request);
                 break;
             case 2:
             case 3:
-                schedule();
+                schedule(&request);
                 break;
             default:
                 puts("Goodbye.");
-                release();
+                release(&request);
                 return EXIT_SUCCESS;
         }
 
         puts(""); // Add some space before the menu is shown again.
     }
 
-    release();
+    release(&request);
     return EXIT_FAILURE;
 }
 
