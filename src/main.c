@@ -192,6 +192,46 @@ int schedule_sstf(const disk_request* const request)
     // Sort the ordered sequence array in ascending order.
     qsort(&ordered_sequence, request->sequence_length, sizeof(size_t), compare_tracks);
 
+    // Compute delays for the ordered sequence array.
+    size_t i = 1;
+    size_t j = 0;
+    for (; i < request->sequence_length; ++i) {
+        for (j = 0; j < i; ++j) {
+            if (ordered_sequence[i] == request->track_sequence[j]) {
+                ordered_sequence_delay[i] = i - j;
+                break;
+            }
+        }
+    }
+
+    // Compute delays.
+    size_t average_delay_total = 0;
+    size_t delayed_tracks = 0;
+    size_t max_delay_i = 0;
+
+    for (i = 0; i < request->sequence_length; ++i) {
+        if (ordered_sequence_delay[i] > 0) {
+            average_delay_total += ordered_sequence_delay[i];
+            ++delayed_tracks;
+
+            if (ordered_sequence_delay[i] > ordered_sequence_delay[max_delay_i]) {
+                max_delay_i = i;
+            }
+        }
+    }
+
+    // Print all results.
+    print_traversal(request, ordered_sequence);
+
+    if (delayed_tracks > 0) {
+        printf(
+            "The average delay of all tracks processed later is: %.2f\n\n"
+            "The longest delay experience by a track is: %zu by track %zu\n",
+            (double) average_delay_total / (double) delayed_tracks,
+            ordered_sequence_delay[max_delay_i],
+            ordered_sequence[max_delay_i]);
+    }
+
     free(ordered_sequence);
     free(ordered_sequence_delay);
 
