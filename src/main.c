@@ -148,6 +148,16 @@ int initialise(disk_request* const request)
     return 0;
 }
 
+void release(disk_request* const request)
+{
+    if (request->sequence_length > 0) {
+        free(request->track_sequence);
+        request->track_count = 0;
+        request->sequence_length = 0;
+        request->track_sequence = NULL;
+    }
+}
+
 bool is_duplicate(const size_t* const array, const size_t end, const size_t value)
 {
     size_t i = 0;
